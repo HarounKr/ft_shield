@@ -1,0 +1,13 @@
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <syslog.h>
+#include <signal.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/file.h> 
+#include <pthread.h>
