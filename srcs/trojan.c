@@ -47,10 +47,7 @@ void *handle_client(void *arg)
     }
 
     close(client_socket);
-
-    pthread_mutex_lock(&connection_mutex);
     active_connections--;
-    pthread_mutex_unlock(&connection_mutex);
 
     return NULL;
 }
@@ -82,15 +79,12 @@ void start_socket_listener()
         new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
         printf("New connection attempt...\n");
 
-        pthread_mutex_lock(&connection_mutex);
         if (active_connections >= MAX_CLIENTS) {
-            pthread_mutex_unlock(&connection_mutex);
             send(new_socket, "Connection refused\n", strlen("Connection refused\n"), 0);
             close(new_socket);
             continue;
         }
         active_connections++;
-        pthread_mutex_unlock(&connection_mutex);
 
         pthread_t thread_id;
         pthread_create(&thread_id, NULL, handle_client, &new_socket);
