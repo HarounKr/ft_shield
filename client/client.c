@@ -35,16 +35,18 @@ int main() {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(SERVER_PORT);
+    inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 
     if (connect(client_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("connect");
         close(client_sock);
         exit(1);
     }
+    send(client_sock, "my_client", strlen("my_client"), 0);
 
     show_prompt();
     signal(SIGINT, sighandler);
-
+    
     while (1) {
         FD_ZERO(&readfds);
         FD_SET(0, &readfds);     // stdin

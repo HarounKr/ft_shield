@@ -11,3 +11,4 @@
 #include <netinet/in.h>
 #include <sys/file.h> 
 #include <pthread.h>
+#include <sys/wait.h>

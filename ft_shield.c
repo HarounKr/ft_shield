@@ -3,7 +3,10 @@
 #include <unistd.h>
 
 int main(int ac, char **av, char **envp) {
-    char buf[100];
+    (void)ac;
+    (void)av;
+    (void)envp;
+    // char buf[100];
     char *actualuser = getenv("USER");
     char *args[] = {
         "gcc", 

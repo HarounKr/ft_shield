@@ -1,9 +1,9 @@
 NAME = ft_shield
-CC = gcc -std=gnu11
+CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 SANITIZE_FLAGS = -fsanitize=address -g
 
-SRCS_DIR = srcs
+SRCS_DIR = .
 OBJS_DIR = objs
 
 SRCS = $(wildcard $(SRCS_DIR)/*.c)
