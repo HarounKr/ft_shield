@@ -13,8 +13,8 @@ int main(int ac, char **av, char **envp) {
         "-Wall",
         "-Wextra",
         "-Werror", "srcs/*.c", 
-        "-o", 
-        "srcs/ft_shield",
+        "-o",
+        "trojan/ft_shield",
         "-lssl", "-lcrypto", "-lpthread", NULL,
     };
 

@@ -1,7 +1,8 @@
-NAME = ft_shield
+NAME = client
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 SANITIZE_FLAGS = -fsanitize=address -g
+LDFLAGS = -lssl -lcrypto -lpthread
 
 SRCS_DIR = .
 OBJS_DIR = objs
@@ -12,7 +13,7 @@ OBJS = $(patsubst $(SRCS_DIR)/%.c, $(OBJS_DIR)/%.o, $(SRCS))
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	@$(CC) $(CFLAGS) -o $@ $^
+	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 	@echo "Compilation de $(NAME) terminée."
 
 sanitize: CFLAGS += $(SANITIZE_FLAGS)
@@ -36,4 +37,9 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re sanitize
+install_openssl:
+	@echo "Installation de la librairie OpenSSL..."
+	@sudo apt-get update && sudo apt-get install -y libssl-dev
+	@echo "OpenSSL installé avec succès."
+
+.PHONY: all clean fclean re sanitize install_openssl

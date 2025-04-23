@@ -19,6 +19,8 @@
 #include <openssl/err.h>
 #include <sys/select.h>
 
+#define MAX_CLIENTS 3
+
 typedef struct s_args {
     int client_socket;
     SSL *ssl;
@@ -28,5 +30,7 @@ typedef struct s_args {
 void handle_shell(SSL *ssl);
 SSL_CTX *create_context();
 void configure_cert(SSL_CTX *ctx);
+void ft_shutdown(t_args *args);
+void format_response(char *dest, char *src);
 
 #endif

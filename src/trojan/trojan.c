@@ -9,10 +9,6 @@ void sig_handler(int signal) {
     sig = signal;
 }
 
-void format_response(char *dest, char *src) {
-    snprintf(dest, 1024, "%s", src);
-}
-
 int handle_recv(SSL *ssl) {
     char buffer[1024];
     char response[1024];
@@ -80,7 +76,6 @@ void *handle_client(void *arg) {
     return NULL;
 }
 
-
 void start_socket_listener() {
     int server_fd;
     struct sockaddr_in address;
@@ -111,23 +106,16 @@ void start_socket_listener() {
         if (SSL_accept(args->ssl)) {
             if (active_connections >= MAX_CLIENTS) {
                 SSL_write(args->ssl, "Connection refused\n", strlen("Connection refused\n"));
-                SSL_shutdown(args->ssl);
-                SSL_free(args->ssl);
-                close(args->client_socket);
-                free(args);
+                ft_shutdown(args);
                 continue;
             }
-
             active_connections++;
             pthread_t thread_id;
             pthread_create(&thread_id, NULL, handle_client, args);
             pthread_detach(thread_id);
         } else {
             ERR_print_errors_fp(stderr);
-            SSL_shutdown(args->ssl);
-            SSL_free(args->ssl);
-            close(args->client_socket);
-            free(args);
+            ft_shutdown(args);
         }
     }
 
