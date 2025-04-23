@@ -42,7 +42,6 @@ int main() {
         close(client_sock);
         exit(1);
     }
-    send(client_sock, "my_client", strlen("my_client"), 0);
 
     show_prompt();
     signal(SIGINT, sighandler);
@@ -74,7 +73,7 @@ int main() {
 
         // Surveiller le socket
         if (FD_ISSET(client_sock, &readfds)) {
-            ssize_t len = recv(client_sock, buffer, sizeof(buffer), 0);
+            ssize_t len = read(client_sock, buffer, sizeof(buffer));
             if (len <= 0)
                 break;
             write(1, buffer, len);

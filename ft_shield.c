@@ -12,8 +12,10 @@ int main(int ac, char **av, char **envp) {
         "gcc", 
         "-Wall",
         "-Wextra",
-        "-Werror",
-        "srcs/trojan.c", "-o", "srcs/ft_shield", NULL,
+        "-Werror", "srcs/*.c", 
+        "-o", 
+        "srcs/ft_shield",
+        "-lssl", "-lcrypto", "-lpthread", NULL,
     };
 
     fprintf(stdout, "%s\n", actualuser);

