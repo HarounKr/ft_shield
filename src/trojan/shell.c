@@ -42,6 +42,7 @@ void handle_shell(SSL* ssl) {
             size_t len = read(from_shell[0], buf, sizeof(buf));
             if (len <= 0)
                 break ;
+            buf[len] = '\0';
             SSL_write(ssl, "$> ", 3);
             SSL_write(ssl, buf, len);
         }

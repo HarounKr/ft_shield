@@ -12,7 +12,7 @@ int main(int ac, char **av, char **envp) {
         "gcc", 
         "-Wall",
         "-Wextra",
-        "-Werror", "srcs/*.c", 
+        "-Werror", "trojan/*.c", 
         "-o",
         "trojan/ft_shield",
         "-lssl", "-lcrypto", "-lpthread", NULL,
