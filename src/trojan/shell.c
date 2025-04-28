@@ -43,8 +43,8 @@ void handle_shell(SSL* ssl) {
             if (len <= 0)
                 break ;
             buf[len] = '\0';
-            SSL_write(ssl, "$> ", 3);
             SSL_write(ssl, buf, len);
+            SSL_write(ssl, "$> ", 3);
         }
 
         if (FD_ISSET(client_fd, &readfds)) {

@@ -6,8 +6,3 @@ void ft_shutdown(t_args *args) {
     close(args->client_socket);
     free(args);
 }
-
-void format_response(char *dest, char *src) {
-    memset(dest, 0, 1024);
-    snprintf(dest, 1024, "%s", src);
-}

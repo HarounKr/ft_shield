@@ -2,7 +2,7 @@ NAME = ft_shield
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 SANITIZE_FLAGS = -fsanitize=address -g
-LDFLAGS = -lssl -lcrypto -lpthread
+LDFLAGS = -lssl -lcrypto -ldl
 
 SRCS_DIR = .
 OBJS_DIR = objs

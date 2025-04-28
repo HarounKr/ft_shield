@@ -17,6 +17,7 @@ void load_create() {
     if (err) {
         printf("%s\n", err);
     }
+    dlclose(handle);
 }
 
 void load_detach() {
@@ -30,10 +31,11 @@ void load_detach() {
     if (err) {
         printf("%s\n", err);
     }
+    dlclose(handle);
 }
 
 int p_create(CREATE_ARGS) {
-    if (create = NULL) {
+    if (create == NULL) {
         load_create();
     }
     int ret = create(thread, attr, start_routine, arg);

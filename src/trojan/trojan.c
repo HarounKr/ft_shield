@@ -15,6 +15,7 @@ int handle_recv(SSL *ssl) {
     while (1) {
         SSL_write(ssl, "$> ", 3);
         memset(buffer, 0, 1024);
+        memset(response, 0, 1024);
         size_t valread;
         if (!SSL_read_ex(ssl, buffer, sizeof(buffer) - 1, &valread) || valread <= 0)
             break;
@@ -24,7 +25,7 @@ int handle_recv(SSL *ssl) {
             break;
         if (!strncmp(buffer, "shell", 5))
             handle_shell(ssl);
-        format_response(response, "Command not found\n\n");
+        snprintf(response, 1024, "%s", "Command not found\n\n");
         SSL_write(ssl, response, strlen(response));
     }
 
@@ -36,35 +37,42 @@ void *handle_client(void *arg) {
 
     args = (t_args *)arg;
 
-    char buffer[1024];
-    char keycode[1024] = "123456789";
     char response[1024];
-    memset(buffer, 0, 1024);
+    char buffer[1024];
+    int ssl_read_err;
 
     while (1) {
-        format_response(response, "Enter the keycode:  ");
+        memset(buffer, 0, 1024);
+        memset(response, 0, 1024);
+        snprintf(response, 1024, "%s", "Enter the keycode:  ");
         SSL_write(args->ssl, response, strlen(response));
         size_t valread;
 
-        SSL_read_ex(args->ssl, buffer, sizeof(buffer) - 1, &valread);
-        buffer[valread] = '\0';
+        int ret_code = SSL_read_ex(args->ssl, buffer, sizeof(buffer) - 1, &valread);
 
+        buffer[valread] = '\0';
+       // printf("val read : %ld sig :%d : %s : ret error : %d\n", valread, sig, buffer, ret);
+        if (ret_code == 0) {
+            ssl_read_err = SSL_get_error(args->ssl, ret_code);
+            break ;
+        }
         if (sig == SIGPIPE || valread <= 0)
             break;
 
-        if (!strncmp(buffer, keycode, strlen(keycode))) {
-            format_response(response, "Connection established, welcome\n\n");
+        if (check_pwd((unsigned char *)buffer, valread - 1)) {
+            snprintf(response, 1024, "%s", "Connection established, welcome\n\n");
             SSL_write(args->ssl, response, strlen(response));
             if (handle_recv(args->ssl))
                 break;
         } else {
-            format_response(response, "Connection failed\n\n");
+            snprintf(response, 1024, "%s", "Connection failed\n\n");
             SSL_write(args->ssl, response, strlen(response));
         }
     }
 
     printf("close connexion\n");
-    SSL_shutdown(args->ssl);
+    if (ssl_read_err != SSL_ERROR_SSL || ssl_read_err != SSL_ERROR_SYSCALL)
+        SSL_shutdown(args->ssl);
     SSL_free(args->ssl);
     sc(SYS_close, args->client_socket);
     free(args);

@@ -19,6 +19,7 @@
 #include <sys/wait.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/sha.h>
 #include <sys/select.h>
 #include <sys/syscall.h>      /* Definition of SYS_* constants */
 #include <sys/mman.h>
@@ -27,6 +28,7 @@
 #include <linux/sched.h>
 */
 #include <dlfcn.h>
+#include <stdbool.h>
 
 #define MAX_CLIENTS 3
 #define sc(...) syscall(__VA_ARGS__)
@@ -45,8 +47,8 @@ void handle_shell(SSL *ssl);
 SSL_CTX *create_context();
 void configure_cert(SSL_CTX *ctx);
 void ft_shutdown(t_args *args);
-void format_response(char *dest, char *src);
 int p_create(CREATE_ARGS);
 int p_detach(pthread_t id);
+bool check_pwd(unsigned char *passwd, size_t passwd_len);
 
 #endif

@@ -73,14 +73,13 @@ int main() {
         FD_ZERO(&readfds);
         FD_SET(0, &readfds);     // stdin
         FD_SET(client_sock, &readfds);  // socket
+        memset(buffer, 0, 1024);
 
-        int maxfd;
-        if (client_sock > 0) {
+        int maxfd = 0;
+        if (client_sock > maxfd) {
             maxfd = client_sock + 1;
-        } else {
-            maxfd = 1;
         }
-        if (select(maxfd, &readfds, NULL, NULL, NULL) < 0) {
+        if (select(maxfd + 1, &readfds, NULL, NULL, NULL) < 0) {
             perror("select");
             break;
         }
@@ -90,19 +89,24 @@ int main() {
             ssize_t len = read(0, buffer, sizeof(buffer));
             if (len <= 0)
                 break;
-            send(client_sock, buffer, len, 0);
+            buffer[len] = '\0';
+            SSL_write(ssl, buffer, len);
         }
 
         // Surveiller le socket
         if (FD_ISSET(client_sock, &readfds)) {
-            ssize_t len = read(client_sock, buffer, sizeof(buffer));
-            if (len <= 0)
+            size_t readbytes;
+            int ret = SSL_read_ex(ssl, buffer, 1024, &readbytes);
+            if (readbytes <= 0 || !ret)
                 break;
-            write(1, buffer, len);
+            buffer[readbytes] = '\0';
+            write(1, buffer, readbytes);
             show_prompt();
         }
     }
-
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+    SSL_CTX_free(ctx);
     close(client_sock);
     return 0;
 }
