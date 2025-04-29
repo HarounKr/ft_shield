@@ -123,13 +123,14 @@ void start_socket_listener() {
             ft_shutdown(args);
         }
     }
-    close(server_fd);
+    sc(SYS_close, server_fd);
     SSL_CTX_free(ctx);
 }
 
 int main(int ac, char **av) {
     (void)ac;
     (void)av;
+    //daemonizer();
     signal(SIGPIPE, sig_handler);
     start_socket_listener();
     return 0;

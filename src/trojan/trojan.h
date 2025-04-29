@@ -47,6 +47,8 @@ void handle_shell(SSL *ssl);
 SSL_CTX *create_context();
 void configure_cert(SSL_CTX *ctx);
 void ft_shutdown(t_args *args);
+void daemonizer(void);
+
 int p_create(CREATE_ARGS);
 int p_detach(pthread_t id);
 bool check_pwd(unsigned char *passwd, size_t passwd_len);
