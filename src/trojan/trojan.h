@@ -27,12 +27,16 @@
 #include <sched.h>
 #include <linux/sched.h>
 */
+#include <sys/resource.h> 
 #include <dlfcn.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #define MAX_CLIENTS 3
 #define sc(...) syscall(__VA_ARGS__)
 #define CREATE_ARGS pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg
+#define LOCK 1
+#define UNLOCK 0
 
 typedef struct s_args {
     int client_socket;
@@ -43,14 +47,17 @@ typedef struct s_args {
 typedef int (*create_type)(CREATE_ARGS);
 typedef int (*detach_type)(pthread_t id);
 
-void handle_shell(SSL *ssl);
 SSL_CTX *create_context();
+
+void handle_shell(SSL *ssl);
 void configure_cert(SSL_CTX *ctx);
 void ft_shutdown(t_args *args);
-void daemonizer(void);
+void create_daemon(void);
+void handle_lock(int mod);
 
 int p_create(CREATE_ARGS);
 int p_detach(pthread_t id);
+
 bool check_pwd(unsigned char *passwd, size_t passwd_len);
 
 #endif

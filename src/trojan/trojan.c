@@ -123,6 +123,7 @@ void start_socket_listener() {
             ft_shutdown(args);
         }
     }
+    handle_lock(UNLOCK);
     sc(SYS_close, server_fd);
     SSL_CTX_free(ctx);
 }
@@ -130,7 +131,7 @@ void start_socket_listener() {
 int main(int ac, char **av) {
     (void)ac;
     (void)av;
-    //daemonizer();
+    create_daemon();
     signal(SIGPIPE, sig_handler);
     start_socket_listener();
     return 0;
