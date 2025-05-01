@@ -3,14 +3,13 @@
 // man7 daemon
 
 void close_fds() {
-    int fdlimit = (int)sysconf(_SC_OPEN_MAX);
-
-    for (int fd = STDERR_FILENO + 1; fd < fdlimit; fd++)
-        close(fd);
+    if (syscall(SYS_close_range, 3, ~0U, 0) == -1) {
+        perror("close_range");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void reset_signals() {
-
     for (int sig = SIGHUP; sig < _NSIG; sig++)
         signal(sig, SIG_DFL);
 
@@ -57,12 +56,11 @@ void create_daemon() {
     if (pid > 0)
         exit(EXIT_SUCCESS);
         
+    handle_lock(LOCK);
     close_fds();
     reset_signals();
-    handle_lock(LOCK);
     sc(SYS_umask, 0);
     sc(SYS_chdir, "/");
-
     int fd = sc(SYS_open, "/dev/null");
     if (fd < 0)
         exit(EXIT_FAILURE);
