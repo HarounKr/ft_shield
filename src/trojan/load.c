@@ -6,27 +6,27 @@
 static create_type create = NULL;
 static detach_type detach = NULL;
 
-void load_create() {
-    void *handle = dlopen("libpthread.so.0", RTLD_LAZY); // grep: /lib/x86_64-linux-gnu/libpthread.so.0: binary file matches
-    char *err = dlerror();
-    if (err) {
-        printf("%s\n", err);
-    }
-    create = (create_type)dlsym(handle, "pthread_create");
-    err = dlerror();
-    if (err) {
-        printf("%s\n", err);
-    }
-    dlclose(handle);
-}
+void load(int mod) {
+    int file[15] = {70, 67, 72, 90, 94, 66, 88, 79, 75, 78, 4, 89, 69, 4, 26};
+    int create_name[14] = {90, 94, 66, 88, 79, 75, 78, 117, 73, 88, 79, 75, 94, 79};
+    int detach_name[14] = {90, 94, 66, 88, 79, 75, 78, 117, 78, 79, 94, 75, 73, 66};
 
-void load_detach() {
-    void *handle = dlopen("libpthread.so.0", RTLD_LAZY);
+    char decoded[50];
+    decode(file, decoded, 42, 15);
+
+    void *handle = dlopen(decoded, RTLD_LAZY); // grep: /lib/x86_64-linux-gnu/libpthread.so.0: binary file matches
     char *err = dlerror();
     if (err) {
         printf("%s\n", err);
     }
-    create = (create_type)dlsym(handle, "pthread_detach");
+    if (mod == CREATE) {
+        decode(create_name, decoded, 42, 14);
+        create = (create_type)dlsym(handle, decoded);
+    }
+    else {
+        decode(detach_name, decoded, 42, 14);
+        detach = (detach_type)dlsym(handle, decoded);
+    }
     err = dlerror();
     if (err) {
         printf("%s\n", err);
@@ -36,7 +36,7 @@ void load_detach() {
 
 int p_create(CREATE_ARGS) {
     if (create == NULL) {
-        load_create();
+        load(CREATE);
     }
     int ret = create(thread, attr, start_routine, arg);
     return ret;
@@ -44,7 +44,7 @@ int p_create(CREATE_ARGS) {
 
 int p_detach(pthread_t id) {
     if (detach == NULL) {
-        load_detach();
+        load(DETACH);
     }
     int ret = detach(id);
 

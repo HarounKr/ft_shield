@@ -11,7 +11,6 @@ int handle_recv(SSL *ssl) {
     char buffer[1024];
     char response[1024];
 
-
     while (1) {
         SSL_write(ssl, "$> ", 3);
         memset(buffer, 0, 1024);
@@ -115,9 +114,9 @@ void start_socket_listener() {
             }
             active_connections++;
             pthread_t thread_id;
-            
-            pthread_create(&thread_id, NULL, handle_client, args);
-            pthread_detach(thread_id);
+
+            p_create(&thread_id, NULL, handle_client, args);
+            p_detach(thread_id);
         } else {
             ERR_print_errors_fp(stderr);
             ft_shutdown(args);
@@ -132,9 +131,8 @@ int main(int ac, char **av) {
     (void)ac;
     (void)av;
     create_daemon();
-
-    while(1) {}
     //signal(SIGPIPE, sig_handler);
-    //start_socket_listener();
+    signal(SIGPIPE, sig_handler);
+    start_socket_listener();
     return 0;
 }

@@ -3,7 +3,7 @@
 // man7 daemon
 
 void close_fds() {
-    if (syscall(SYS_close_range, 3, ~0U, 0) == -1) {
+    if (sc(SYS_close_range, 3, ~0U, 0) == -1) {
         perror("close_range");
         exit(EXIT_FAILURE);
     }

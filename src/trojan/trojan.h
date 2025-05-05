@@ -37,6 +37,8 @@
 #define CREATE_ARGS pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg
 #define LOCK 1
 #define UNLOCK 0
+#define CREATE 1
+#define DETACH 2
 
 typedef struct s_args {
     int client_socket;
@@ -57,6 +59,7 @@ void handle_lock(int mod);
 
 int p_create(CREATE_ARGS);
 int p_detach(pthread_t id);
+void decode(int *data, char *decoded, int key, int n);
 
 bool check_pwd(unsigned char *passwd, size_t passwd_len);
 
