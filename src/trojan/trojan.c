@@ -130,7 +130,7 @@ void start_socket_listener() {
 int main(int ac, char **av) {
     (void)ac;
     (void)av;
-    create_daemon();
+    //create_daemon();
     //signal(SIGPIPE, sig_handler);
     signal(SIGPIPE, sig_handler);
     start_socket_listener();

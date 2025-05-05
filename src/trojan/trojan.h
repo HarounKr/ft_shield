@@ -60,6 +60,7 @@ void handle_lock(int mod);
 int p_create(CREATE_ARGS);
 int p_detach(pthread_t id);
 void decode(int *data, char *decoded, int key, int n);
+void get_plaintext(unsigned char *dest);
 
 bool check_pwd(unsigned char *passwd, size_t passwd_len);
 
