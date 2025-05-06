@@ -1,0 +1,14 @@
+[Unit] 
+Description=ft_shield start daemon
+After=local-fs.target
+
+[Service]
+Type=forking
+User=root
+Group=root
+ExecStart=/usr/bin/ft_shield
+UMask=007
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
