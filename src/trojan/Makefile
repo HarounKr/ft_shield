@@ -1,10 +1,9 @@
 NAME = ft_shield
 CC = gcc
+LOCK_FILE = /var/lock/ft_shield.lock
 
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -Wall -Wextra -Werror -O0 -fno-pie -no-pie
 SANITIZE_FLAGS = -fsanitize=address -g
-SHELLCODE_FLAGS = -O0 -fno-pie -no-pie -z execstack
-
 LDFLAGS = -lssl -lcrypto -ldl
 
 SRCS_DIR = .
@@ -27,11 +26,6 @@ sanitize: re
 	@echo "Compilation avec AddressSanitizer terminée."
 
 
-shellcode: CFLAGS := -Wall -Wextra $(SHELLCODE_FLAGS)
-shellcode: fclean $(NAME)
-	@echo "Compilation avec options shellcode (execstack, no-PIE, -O0) terminée."
-
-
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c | $(OBJS_DIR)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "Compilation de $< terminée."
@@ -45,6 +39,7 @@ clean:
 
 fclean: clean
 	@rm -f $(NAME)
+	@rm -f $(LOCK_FILE)
 	@echo "Nettoyage complet terminé."
 
 re: fclean all

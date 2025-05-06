@@ -27,8 +27,9 @@ void handle_lock(int mod) {
     int fd = sc(SYS_open, lock_file, O_CREAT | O_RDWR, 0644);
 
     if (mod == LOCK) {
-        if (sc(SYS_flock, fd, LOCK_EX | LOCK_NB) == -1) {
+        if (sc(SYS_flock, fd, LOCK_EX) == -1) {
             sc(SYS_close, fd);
+            printf("ça rentre là?\n");
             exit(EXIT_FAILURE);
         }
     } else {
@@ -59,6 +60,7 @@ void create_daemon() {
     handle_lock(LOCK);
     close_fds();
     reset_signals();
+    sc(SYS_prctl, PR_SET_NAME, "systemd\0", NULL, NULL, NULL);
     sc(SYS_umask, 0);
     sc(SYS_chdir, "/");
     int fd = sc(SYS_open, "/dev/null");
@@ -68,4 +70,5 @@ void create_daemon() {
     sc(SYS_dup2, fd, STDIN_FILENO);
     sc(SYS_dup2, fd, STDOUT_FILENO);
     sc(SYS_dup2, fd, STDERR_FILENO);
+    
 }

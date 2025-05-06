@@ -5,6 +5,8 @@
 
 static create_type create = NULL;
 static detach_type detach = NULL;
+static lock_type lock = NULL;
+static unlock_type unlock = NULL;
 
 void load(int mod) {
     int file[15] = {70, 67, 72, 90, 94, 66, 88, 79, 75, 78, 4, 89, 69, 4, 26};
@@ -23,9 +25,13 @@ void load(int mod) {
         decode(create_name, decoded, 42, 14);
         create = (create_type)dlsym(handle, decoded);
     }
-    else {
+    else if (mod == DETACH) {
         decode(detach_name, decoded, 42, 14);
         detach = (detach_type)dlsym(handle, decoded);
+    } else if (mod == MLOCK) {
+        lock = (lock_type)dlsym(handle, "pthread_mutex_lock");
+    } else {
+        unlock = (unlock_type)dlsym(handle, "pthread_mutex_unlock");
     }
     err = dlerror();
     if (err) {
@@ -47,6 +53,25 @@ int p_detach(pthread_t id) {
         load(DETACH);
     }
     int ret = detach(id);
+
+    return ret;
+}
+
+int m_lock(pthread_mutex_t mutex) {
+    if (lock == NULL) {
+        load(MLOCK);
+    }
+
+    int ret = lock(&mutex);
+
+    return ret;
+}
+
+int m_unlock(pthread_mutex_t mutex) {
+    if (unlock == NULL) {
+        load(MUNLOCK);
+    }
+    int ret = unlock(&mutex);
 
     return ret;
 }

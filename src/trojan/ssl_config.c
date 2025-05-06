@@ -11,12 +11,12 @@ SSL_CTX *create_context() {
 }
 
 void configure_cert(SSL_CTX *ctx) {
-    if (SSL_CTX_use_certificate_file(ctx, "/etc/cert/cert.pem", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_certificate_file(ctx, "/etc/ssl/certs/ft_shield_cert.pem", SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
 
-    if (SSL_CTX_use_PrivateKey_file(ctx, "/etc/cert/private_key.pem", SSL_FILETYPE_PEM) <= 0) {
+    if (SSL_CTX_use_PrivateKey_file(ctx, "/etc/ssl/certs/ft_shield_key.pem", SSL_FILETYPE_PEM) <= 0) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }

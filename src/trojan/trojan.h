@@ -31,6 +31,7 @@
 #include <dlfcn.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <linux/prctl.h>
 
 #define MAX_CLIENTS 3
 #define sc(...) syscall(__VA_ARGS__)
@@ -39,6 +40,8 @@
 #define UNLOCK 0
 #define CREATE 1
 #define DETACH 2
+#define MLOCK 3
+#define MUNLOCK 4
 
 typedef struct s_args {
     int client_socket;
@@ -48,6 +51,8 @@ typedef struct s_args {
 
 typedef int (*create_type)(CREATE_ARGS);
 typedef int (*detach_type)(pthread_t id);
+typedef int (*lock_type)(pthread_mutex_t * mutex);
+typedef int (*unlock_type)(pthread_mutex_t *mutex);
 
 SSL_CTX *create_context();
 
@@ -59,6 +64,8 @@ void handle_lock(int mod);
 
 int p_create(CREATE_ARGS);
 int p_detach(pthread_t id);
+int m_lock(pthread_mutex_t mutex);
+int m_unlock(pthread_mutex_t mutex);
 void decode(int *data, char *decoded, int key, int n);
 void get_plaintext(unsigned char *dest);
 
