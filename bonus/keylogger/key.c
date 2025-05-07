@@ -8,7 +8,7 @@
 #include <string.h>
 #include "gnl.h"
 #include <stdbool.h>
-// utiliser la bibliotheque libxkbcommon
+
 const char *keymap[] = {
     [KEY_A] = "A", [KEY_B] = "B", [KEY_C] = "C", [KEY_D] = "D",
     [KEY_E] = "E", [KEY_F] = "F", [KEY_G] = "G", [KEY_H] = "H",
@@ -17,13 +17,39 @@ const char *keymap[] = {
     [KEY_Q] = "Q", [KEY_R] = "R", [KEY_S] = "S", [KEY_T] = "T",
     [KEY_U] = "U", [KEY_V] = "V", [KEY_W] = "W", [KEY_X] = "X",
     [KEY_Y] = "Y", [KEY_Z] = "Z",
+
+    [KEY_1] = "1", [KEY_2] = "2", [KEY_3] = "3", [KEY_4] = "4",
+    [KEY_5] = "5", [KEY_6] = "6", [KEY_7] = "7", [KEY_8] = "8",
+    [KEY_9] = "9", [KEY_0] = "0",
+
     [KEY_SPACE] = "SPACE",
-    [KEY_ENTER] = "ENTER"
+    [KEY_ENTER] = "ENTER",
+    [KEY_BACKSPACE] = "BACKSPACE",
+    [KEY_TAB] = "TAB",
+    [KEY_ESC] = "ESC",
+
+    [KEY_MINUS] = "-", [KEY_EQUAL] = "=", 
+    [KEY_LEFTBRACE] = "[", [KEY_RIGHTBRACE] = "]",
+    [KEY_BACKSLASH] = "\\", [KEY_SEMICOLON] = ";",
+    [KEY_APOSTROPHE] = "'", [KEY_GRAVE] = "`",
+    [KEY_COMMA] = ",", [KEY_DOT] = ".", [KEY_SLASH] = "/",
+
+    [KEY_LEFTSHIFT] = "LSHIFT", [KEY_RIGHTSHIFT] = "RSHIFT",
+    [KEY_LEFTCTRL] = "LCTRL", [KEY_RIGHTCTRL] = "RCTRL",
+    [KEY_LEFTALT] = "LALT", [KEY_RIGHTALT] = "RALT",
+    [KEY_CAPSLOCK] = "CAPSLOCK",
+
+    [KEY_UP] = "UP", [KEY_DOWN] = "DOWN",
+    [KEY_LEFT] = "LEFT", [KEY_RIGHT] = "RIGHT",
+
+    [KEY_F1] = "F1", [KEY_F2] = "F2", [KEY_F3] = "F3", [KEY_F4] = "F4",
+    [KEY_F5] = "F5", [KEY_F6] = "F6", [KEY_F7] = "F7", [KEY_F8] = "F8",
+    [KEY_F9] = "F9", [KEY_F10] = "F10", [KEY_F11] = "F11", [KEY_F12] = "F12",
 };
 
 void read_event(char *event)
 {
-    char *device = malloc(sizeof(char *) * (strlen(event) + strlen("/dev/input/")) + 1);;
+    char *device = malloc(sizeof(char *) * (strlen(event) + strlen("/dev/input/")) + 1);
     strcpy(device, "/dev/input/");
     strcat(device,event);
     int fd = open(device, O_RDONLY);
