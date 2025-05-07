@@ -64,7 +64,6 @@
 "[Install]\n" \
 "WantedBy=multi-user.target\n"
 
-
 typedef struct s_args {
     int client_socket;
     SSL *ssl;

