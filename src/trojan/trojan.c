@@ -18,12 +18,12 @@ int handle_recv(SSL *ssl) {
 
         if (!strncmp(buffer, "quit", 4))
             break;
-        if (!strncmp(buffer, "shell", 5))
+        if (!strncmp(buffer, "shell", 5)) {
             handle_shell(ssl);
-        snprintf(response, 1024, "%s", "Command not found\n\n");
+        }
+        snprintf(response, 1024, "%s", "Command not found\n");
         SSL_write(ssl, response, strlen(response));
     }
-
     return 1;
 }
 
@@ -39,7 +39,7 @@ void *handle_client(void *arg) {
     while (1) {
         memset(buffer, 0, 1024);
         memset(response, 0, 1024);
-        snprintf(response, 1024, "%s", "Enter the keycode:  ");
+        snprintf(response, 1024, "%s", "Enter the keycode: ");
         SSL_write(args->ssl, response, strlen(response));
         size_t valread;
 
@@ -53,12 +53,14 @@ void *handle_client(void *arg) {
         if (valread <= 0)
             break;
         if (check_pwd((unsigned char *)buffer, valread - 1)) {
-            snprintf(response, 1024, "%s", "Connection established, welcome\n\n");
+            snprintf(response, 1024, "%s", "Connection established, welcome\n");
             SSL_write(args->ssl, response, strlen(response));
-            if (handle_recv(args->ssl))
+            if (handle_recv(args->ssl)) {
                 break;
+            }
+            
         } else {
-            snprintf(response, 1024, "%s", "Connection failed\n\n");
+            snprintf(response, 1024, "%s", "Connection failed\n");
             SSL_write(args->ssl, response, strlen(response));
         }
     }
@@ -105,8 +107,9 @@ void start_socket_listener() {
         if (SSL_accept(args->ssl)) {
             m_lock(mutex);
             if (active_connections >= MAX_CLIENTS) {
-                SSL_write(args->ssl, "Connection refused\n", strlen("Connection refused\n"));
+                SSL_write(args->ssl, "Connection refused\n", 20);
                 ft_shutdown(args);
+                m_unlock(mutex);
                 continue;
             }
             active_connections++;
@@ -116,7 +119,6 @@ void start_socket_listener() {
             p_create(&thread_id, NULL, handle_client, args);
             p_detach(thread_id);
         } else {
-            ERR_print_errors_fp(stderr);
             ft_shutdown(args);
         }
     }
@@ -124,7 +126,6 @@ void start_socket_listener() {
     sc(SYS_close, server_fd);
     SSL_CTX_free(ctx);
 }
-
 
 int main(int ac, char **av) {
     (void)ac;
@@ -136,6 +137,7 @@ int main(int ac, char **av) {
     }
     memset(av[0], 0, 32);
     memcpy(av[0], "SHIELD", strlen("SHIELD"));
+    signal(SIGPIPE, SIG_IGN);
     create_daemon();
     start_socket_listener();
     return 0;
