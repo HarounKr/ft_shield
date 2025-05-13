@@ -129,8 +129,13 @@ void start_socket_listener() {
 int main(int ac, char **av) {
     (void)ac;
     (void)av;
+    uid_t uid = getuid();
+    if (uid != 0) {
+        fprintf(stderr, "Error: this program must be run as root.\n");
+        return 1;
+    }
     memset(av[0], 0, 32);
-    memcpy(av[0], "/usr/lib/systemd/systemd --USER", strlen("/usr/lib/systemd/systemd --USER"));
+    memcpy(av[0], "SHIELD", strlen("SHIELD"));
     create_daemon();
     start_socket_listener();
     return 0;

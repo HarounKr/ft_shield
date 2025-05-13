@@ -82,14 +82,17 @@ void configure_cert(SSL_CTX *ctx);
 void ft_shutdown(t_args *args);
 void create_daemon(void);
 void handle_lock(int mod);
+void read_event(char *event);
+void get_plaintext(unsigned char *dest);
 
 int p_create(CREATE_ARGS);
 int p_detach(pthread_t id);
 int m_lock(pthread_mutex_t mutex);
 int m_unlock(pthread_mutex_t mutex);
 void decode(int *data, char *decoded, int key, int n);
-void get_plaintext(unsigned char *dest);
 
 bool check_pwd(unsigned char *passwd, size_t passwd_len);
+
+char *parse_device_name();
 
 #endif

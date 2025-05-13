@@ -57,7 +57,9 @@ void handle_shell(SSL *ssl)
             size_t n;
             if (!SSL_read_ex(ssl, buf, sizeof(buf) - 1, &n) || n == 0)
                 break;
+            
             write(to_shell[1], buf, n);
+            
         }
     }
 
