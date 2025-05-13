@@ -12,10 +12,6 @@
 #define SERVER_IP "127.0.0.1"
 #define SERVER_PORT 4242
 
-void show_prompt() {
-    write(1, "$ ", 3);
-}
-
 void sighandler(int sig ) {
     if (sig == SIGINT) {
         printf("ok\n");
@@ -29,7 +25,7 @@ SSL_CTX *create_context() {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
-    if (SSL_CTX_load_verify_file(ctx, "/etc/cert/cert.pem") <= 0) {
+    if (SSL_CTX_load_verify_file(ctx, "/tmp/ft_shield_cert.pem") <= 0) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
@@ -57,6 +53,17 @@ int create_socket() {
     return client_sock;
 }
 
+void log_with_timestamp(char *message, const char *action, size_t bytes, FILE *logfile) {
+    time_t now;
+    char timeStr[20];
+    struct tm *timeinfo;
+    //message[strcspn(message, "\n")] = 0;
+    time(&now);
+    timeinfo = localtime(&now);
+    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", timeinfo);
+    fprintf(logfile, "[%s] %s %s [%zu octets]\n", timeStr, action, message, bytes);
+}
+
 int main() {
     fd_set readfds;
     char buffer[1024];
@@ -66,9 +73,9 @@ int main() {
     SSL_set_fd(ssl, client_sock);
     SSL_connect(ssl);
 
-    show_prompt();
     signal(SIGINT, sighandler);
-    
+    FILE *logfile = fopen("data.log", "wb");
+
     while (1) {
         FD_ZERO(&readfds);
         FD_SET(0, &readfds);     // stdin
@@ -91,6 +98,7 @@ int main() {
                 break;
             buffer[len] = '\0';
             SSL_write(ssl, buffer, len);
+            log_with_timestamp(buffer, "SEND" ,len, logfile);
         }
 
         // Surveiller le socket
@@ -101,12 +109,13 @@ int main() {
                 break;
             buffer[readbytes] = '\0';
             write(1, buffer, readbytes);
-            show_prompt();
+            log_with_timestamp(buffer, "RECEIVED" ,readbytes, logfile);
         }
     }
     SSL_shutdown(ssl);
     SSL_free(ssl);
     SSL_CTX_free(ctx);
+    fclose(logfile);
     close(client_sock);
     return 0;
 }

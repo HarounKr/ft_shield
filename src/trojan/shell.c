@@ -70,6 +70,4 @@ void handle_shell(SSL *ssl)
         sc(SYS_kill, pid, SIGKILL);
         waitpid(pid, &status, 0);
     }
-    printf("okok 2\n");
-
 }
