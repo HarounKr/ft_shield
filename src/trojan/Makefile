@@ -6,6 +6,8 @@ KEY_FILE = $(TMP_DIR)/ft_shield_key.pem
 CERT_FILE = $(TMP_DIR)/ft_shield_cert.pem
 LOG_FILE = $(TMP_DIR)/daemon.log
 
+#ASAN_OPTIONS=detect_leaks=1 ./ft_shield ==> detect leaks
+
 CFLAGS = -Wall -Wextra -Werror -O0 -fno-pie -no-pie
 SANITIZE_FLAGS = -fsanitize=address -g
 LDFLAGS = -lssl -lcrypto -ldl
@@ -56,7 +58,7 @@ clean:
 
 fclean: clean
 	@rm -f $(NAME)
-	@rm -f $(LOCK_FILE)
+	@sudo rm -f $(LOCK_FILE)
 	@echo "Nettoyage complet terminé."
 
 re: fclean all

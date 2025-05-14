@@ -1,51 +1,43 @@
-[2025-05-14 10:34:34] RECEIVED Enter the keycode:  [19 octets]
-[2025-05-14 10:34:37] SEND 1234
+[2025-05-14 11:13:13] [RECEIVED] Enter the keycode:  [19 octets]
+[2025-05-14 11:13:15] [SEND] 1234
  [5 octets]
-[2025-05-14 10:34:37] RECEIVED Connection established, welcome
+[2025-05-14 11:13:15] [RECEIVED] Connection established, welcome
  [32 octets]
-[2025-05-14 10:34:37] RECEIVED $>  [3 octets]
-[2025-05-14 10:34:39] SEND shell
+[2025-05-14 11:13:15] [RECEIVED] $>  [3 octets]
+[2025-05-14 11:13:21] [SEND] shell
  [6 octets]
-[2025-05-14 10:34:39] SEND ls
+[2025-05-14 11:13:22] [SEND] ls
  [3 octets]
-[2025-05-14 10:34:39] RECEIVED Makefile
-check_pwd.c
-daemon.c
-decrypt.c
-ft_shield
-load.c
-objs
-shell.c
-shellcode
-ssl_config.c
-trojan.c
-trojan.h
-utils.c
- [119 octets]
-[2025-05-14 10:34:39] RECEIVED $>  [3 octets]
-[2025-05-14 10:34:42] SEND pwd
- [4 octets]
-[2025-05-14 10:34:42] RECEIVED /home/hkrifa/Bureau/ft_shield/src/trojan
- [41 octets]
-[2025-05-14 10:34:42] RECEIVED $>  [3 octets]
-[2025-05-14 10:34:44] SEND id
- [3 octets]
-[2025-05-14 10:34:44] RECEIVED uid=0(root) gid=0(root) groups=0(root)
- [39 octets]
-[2025-05-14 10:34:44] RECEIVED $>  [3 octets]
-[2025-05-14 10:34:48] SEND cd ..
- [6 octets]
-[2025-05-14 10:34:49] SEND ls
- [3 octets]
-[2025-05-14 10:34:49] RECEIVED client
-ft_shield
-hash_password.c
-trojan
-xor.c
- [46 octets]
-[2025-05-14 10:34:49] RECEIVED $>  [3 octets]
-[2025-05-14 10:34:54] SEND exit
+[2025-05-14 11:13:22] [RECEIVED] bin
+bin.usr-is-merged
+boot
+cdrom
+dev
+etc
+home
+lib
+lib.usr-is-merged
+lib64
+lost+found
+media
+mnt
+opt
+proc
+root
+run
+sbin
+sbin.usr-is-merged
+snap
+srv
+swap.img
+sys
+tmp
+usr
+var
+ [171 octets]
+[2025-05-14 11:13:22] [RECEIVED] $>  [3 octets]
+[2025-05-14 11:13:27] [SEND] exit
  [5 octets]
-[2025-05-14 10:34:54] RECEIVED Command not found
+[2025-05-14 11:13:27] [RECEIVED] Command not found
  [18 octets]
-[2025-05-14 10:34:54] RECEIVED $>  [3 octets]
+[2025-05-14 11:13:27] [RECEIVED] $>  [3 octets]

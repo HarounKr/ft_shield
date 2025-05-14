@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -lssl -lcrypto
 
-SERVER_SRCS = server.c gnl.c gnl_utils.c
+SERVER_SRCS = server.c
 
 SERVER_OBJS = $(SERVER_SRCS:.c=.o)
 

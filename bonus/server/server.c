@@ -1,4 +1,3 @@
-#include "gnl.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,7 +9,7 @@
 #include <signal.h> // For handling interruptions
 #include <errno.h>  // For error handling
 
-#define PORT 4242
+#define PORT 4243
 
 int server_fd = -1;
 

