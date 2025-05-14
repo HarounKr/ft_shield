@@ -56,7 +56,7 @@ clean:
 
 fclean: clean
 	@rm -f $(NAME)
-	@sudo rm -f $(LOCK_FILE)
+	@rm -f $(LOCK_FILE)
 	@echo "Nettoyage complet terminé."
 
 re: fclean all

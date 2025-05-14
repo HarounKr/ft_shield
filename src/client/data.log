@@ -1,0 +1,51 @@
+[2025-05-14 10:34:34] RECEIVED Enter the keycode:  [19 octets]
+[2025-05-14 10:34:37] SEND 1234
+ [5 octets]
+[2025-05-14 10:34:37] RECEIVED Connection established, welcome
+ [32 octets]
+[2025-05-14 10:34:37] RECEIVED $>  [3 octets]
+[2025-05-14 10:34:39] SEND shell
+ [6 octets]
+[2025-05-14 10:34:39] SEND ls
+ [3 octets]
+[2025-05-14 10:34:39] RECEIVED Makefile
+check_pwd.c
+daemon.c
+decrypt.c
+ft_shield
+load.c
+objs
+shell.c
+shellcode
+ssl_config.c
+trojan.c
+trojan.h
+utils.c
+ [119 octets]
+[2025-05-14 10:34:39] RECEIVED $>  [3 octets]
+[2025-05-14 10:34:42] SEND pwd
+ [4 octets]
+[2025-05-14 10:34:42] RECEIVED /home/hkrifa/Bureau/ft_shield/src/trojan
+ [41 octets]
+[2025-05-14 10:34:42] RECEIVED $>  [3 octets]
+[2025-05-14 10:34:44] SEND id
+ [3 octets]
+[2025-05-14 10:34:44] RECEIVED uid=0(root) gid=0(root) groups=0(root)
+ [39 octets]
+[2025-05-14 10:34:44] RECEIVED $>  [3 octets]
+[2025-05-14 10:34:48] SEND cd ..
+ [6 octets]
+[2025-05-14 10:34:49] SEND ls
+ [3 octets]
+[2025-05-14 10:34:49] RECEIVED client
+ft_shield
+hash_password.c
+trojan
+xor.c
+ [46 octets]
+[2025-05-14 10:34:49] RECEIVED $>  [3 octets]
+[2025-05-14 10:34:54] SEND exit
+ [5 octets]
+[2025-05-14 10:34:54] RECEIVED Command not found
+ [18 octets]
+[2025-05-14 10:34:54] RECEIVED $>  [3 octets]

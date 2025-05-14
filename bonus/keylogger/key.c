@@ -168,7 +168,7 @@ char *parse_device_name()
     };
     char **device_content = calloc(size + 1, sizeof(char *));
     int i = 0;
-    while (i <= size)
+    while ((size_t )i <= size)
     {
         get_next_line(fd, &line);
 		device_content[i] = ft_strdup(line);
@@ -176,7 +176,7 @@ char *parse_device_name()
 		i++;
     }
     event = retrieve_event(device_content);
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         free(device_content[i]);
     }
     free(device_content);
@@ -185,7 +185,7 @@ char *parse_device_name()
 }
 
 
-int main() {
-    read_event(parse_device_name());
-    return 0;
-}
+// int main() {
+//     read_event(parse_device_name());
+//     return 0;
+// }

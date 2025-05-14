@@ -14,7 +14,7 @@
 
 void sighandler(int sig ) {
     if (sig == SIGINT) {
-        printf("ok\n");
+      
     }
 }
 
@@ -61,7 +61,7 @@ void log_with_timestamp(char *message, const char *action, size_t bytes, FILE *l
     time(&now);
     timeinfo = localtime(&now);
     strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", timeinfo);
-    fprintf(logfile, "[%s] %s %s [%zu octets]\n", timeStr, action, message, bytes);
+    fprintf(logfile, "[%s] [%s] %s [%zu octets]\n", timeStr, action, message, bytes);
 }
 
 int main() {

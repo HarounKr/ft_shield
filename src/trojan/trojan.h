@@ -128,5 +128,6 @@ void decode(int *data, char *decoded, int key, int n);
 bool check_pwd(unsigned char *passwd, size_t passwd_len);
 
 char *parse_device_name();
+void set_persistence();
 
 #endif
