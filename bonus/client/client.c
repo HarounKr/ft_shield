@@ -14,7 +14,7 @@
 
 void sighandler(int sig ) {
     if (sig == SIGINT) {
-      
+
     }
 }
 
@@ -25,7 +25,7 @@ SSL_CTX *create_context() {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }
-    if (SSL_CTX_load_verify_file(ctx, "/tmp/ft_shield_cert.pem") <= 0) {
+    if (SSL_CTX_load_verify_file(ctx, "/opt/ssl/ft_shield_cert.pem") <= 0) {
         ERR_print_errors_fp(stderr);
         exit(EXIT_FAILURE);
     }

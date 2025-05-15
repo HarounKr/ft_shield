@@ -1,9 +1,11 @@
 NAME = ft_shield
 CC = gcc
 LOCK_FILE = /tmp/ft_shield.lock
-TMP_DIR = /tmp
-KEY_FILE = $(TMP_DIR)/ft_shield_key.pem
-CERT_FILE = $(TMP_DIR)/ft_shield_cert.pem
+SSL_DIR = /opt/ssl
+LOCAL_KEY = ft_shield_key.pem
+LOCAL_CERT = ft_shield_cert.pem
+TARGET_KEY = $(SSL_DIR)/$(LOCAL_KEY)
+TARGET_CERT = $(SSL_DIR)/$(LOCAL_CERT)
 LOG_FILE = $(TMP_DIR)/daemon.log
 
 #ASAN_OPTIONS=detect_leaks=1 ./ft_shield ==> detect leaks
@@ -42,15 +44,25 @@ $(OBJS_DIR)/%.o: $(BONUS_SRCS_DIR)/%.c | $(OBJS_DIR)
 $(OBJS_DIR):
 	@mkdir -p $@
 
-ssl: $(KEY_FILE) $(CERT_FILE)
-	@echo "Certificat et clé OpenSSL générés."
+ssl:
+	@echo "Génération des certificats SSL localement..."
 
-$(KEY_FILE) $(CERT_FILE):
-	@openssl req -x509 -newkey rsa:2048 \
-		-keyout $(KEY_FILE) \
-		-out $(CERT_FILE) \
+	@echo "Création du dossier $(SSL_DIR)..."
+	@sudo mkdir -p $(SSL_DIR)
+	@sudo chmod 750 $(SSL_DIR)
+	@sudo chown root:root $(SSL_DIR)
+
+	@sudo openssl req -x509 -newkey rsa:2048 \
+		-keyout $(TARGET_KEY) \
+		-out $(TARGET_CERT) \
 		-sha256 -days 365 \
 		-nodes -subj "/CN=localhost"
+
+	@echo "Ajustement des permissions..."
+	@sudo chmod 640 $(TARGET_KEY)
+	@sudo chmod 644 $(TARGET_CERT)
+
+	@echo "Certificats installés dans $(SSL_DIR)"
 
 clean:
 	@rm -rf $(OBJS_DIR)
@@ -75,7 +87,7 @@ stop:
 	@sudo rm -f /etc/systemd/system/ft_shield.service
 	@sudo systemctl daemon-reload
 	@echo "Service ft_shield supprimé avec succès."
-	@PID=$$(pgrep -f SHIELD); \
+	@PID=$$(pgrep -f ft_shield); \
 	if [ -n "$$PID" ]; then \
 		echo "Killing SHIELD process (PID=$$PID)..."; \
 		sudo kill -9 $$PID; \

