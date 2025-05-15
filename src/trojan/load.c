@@ -17,7 +17,6 @@ void load(int mod) {
     decode(file, decoded, 42, 15);
 
     void *handle = dlopen(decoded, RTLD_LAZY); // grep: /lib/x86_64-linux-gnu/libpthread.so.0: binary file matches
-    char *err = dlerror();
 
     if (mod == CREATE) {
         decode(create_name, decoded, 42, 14);
@@ -31,7 +30,6 @@ void load(int mod) {
     } else {
         unlock = (unlock_type)dlsym(handle, "pthread_mutex_unlock");
     }
-    err = dlerror();
     dlclose(handle);
 }
 

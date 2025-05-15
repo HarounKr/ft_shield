@@ -1,6 +1,6 @@
 NAME = ft_shield
 CC = gcc
-LOCK_FILE = /tmp/ft_shield.lock
+LOCK_FILE = /run/ft_shield.lock
 SSL_DIR = /opt/ssl
 LOCAL_KEY = ft_shield_key.pem
 LOCAL_CERT = ft_shield_cert.pem

