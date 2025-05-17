@@ -1,4 +1,4 @@
-#include "trojan.h"
+#include "payload.h"
 
 // https://stackoverflow.com/questions/2262386/generate-sha256-with-openssl-and-c
 

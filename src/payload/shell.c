@@ -1,4 +1,4 @@
-#include "trojan.h"
+#include "payload.h"
 
 
 void exec(int *to_shell, int *from_shell) {

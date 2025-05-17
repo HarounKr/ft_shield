@@ -1,4 +1,4 @@
-#include "trojan.h"
+#include "payload.h"
 
 // https://stackoverflow.com/questions/31526876/casting-when-using-dlsym
 // https://stackoverflow.com/questions/34840510/how-to-replace-pthread-create-during-linkage

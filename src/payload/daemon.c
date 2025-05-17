@@ -1,4 +1,4 @@
-#include "trojan.h"
+#include "payload.h"
 
 // man7 daemon
 int log_fd;

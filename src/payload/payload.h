@@ -1,5 +1,5 @@
-#ifndef TROJAN_H
-#define TROJAN_H
+#ifndef PAYLOAD_H
+#define PAYLOAD_H
 
 // grep -rnw /usr/include -e 'CLONE_SYSVSEM'
 #define _GNU_SOURCE

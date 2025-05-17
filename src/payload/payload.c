@@ -1,4 +1,4 @@
-#include "trojan.h"
+#include "payload.h"
 
 int active_connections = 0;
 pthread_mutex_t mutex;
