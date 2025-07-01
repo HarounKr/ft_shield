@@ -6,7 +6,7 @@
 
 
 int main() {
-    const char *password = "1234";
+    const char *password = "Lemdpestsecure42!";
     const char *salt = "4j9K2x7VzQmLp3Bt";
   
 

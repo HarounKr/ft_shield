@@ -46,7 +46,7 @@
 #define SSL_KEY_PATH "/opt/ssl/ft_shield_key.pem"
 
 #ifndef HASHED_PWD
-    #define HASHED_PWD "4ba117368c491a5d90b64fcccd7d2cedb31146545e87d659cbd0d5cacb3f3064"
+    #define HASHED_PWD "55508b98d2e777bcf11fbd23506a89d4ef021a14c0db1e05647d331fd6c9c95e"
 #endif
 #ifndef SALT
     #define SALT "4j9K2x7VzQmLp3Bt"
