@@ -1,6 +1,7 @@
 # ft_shield
 
 Ce projet implémente un serveur **SSL multi-client** fonctionnant comme une porte dérobée, avec authentification par mot de passe et exécution conditionnelle de commandes.
+Il intègre également un module de keylogging conçu pour enregistrer de manière furtive les frappes clavier effectuées sur la machine cible.
 
 ## Fonctionnalités
 
