@@ -1,4 +1,4 @@
-# Trojan SSL Server
+# ft_shield
 
 Ce projet implémente un serveur **SSL multi-client** fonctionnant comme une porte dérobée, avec authentification par mot de passe et exécution conditionnelle de commandes.
 
