@@ -50,6 +50,15 @@ Vous pouvez tester la connexion avec openssl s_client :
 openssl s_client -connect <IP>:<PORT>
 ```
 
+Ou en exécutant :
+
+```bash
+cd bonus/client
+make
+sudo ./client
+
+**Remarque :** le client enregistre les quantités de données envoyées et reçues dans un fichier `data.log`.
+
 ## Comportement du Daemon
 
 **Instance unique** :  
