@@ -56,8 +56,9 @@ Ou en exécutant :
 cd bonus/client
 make
 sudo ./client
+```
 
-**Remarque :** le client enregistre les quantités de données envoyées et reçues dans un fichier `data.log`.
+**Remarque :** le client enregistre les données envoyées et reçues dans un fichier `data.log`.
 
 ## Comportement du Daemon
 
